@@ -27,10 +27,12 @@ const apiLimiter = rateLimit({
 app.use("/api/", apiLimiter);
 const corsOriginValidator = (origin, callback) => {
     const allowed = getCorsOrigins();
-    if (!origin || allowed.includes(origin))
+    if (!origin || allowed.includes(origin)) {
         callback(null, true);
-    else
+    } else {
+        console.warn(`⚠️ CORS blocked for origin: ${origin}. Allowed origins: ${allowed.join(", ")}`);
         callback(null, false);
+    }
 };
 app.use(cors({
     origin: corsOriginValidator,

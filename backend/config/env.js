@@ -27,6 +27,7 @@ const DEFAULT_CORS_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
     "https://flyvisa.up.railway.app",
+    "https://thuc.up.railway.app",
 ];
 /** Browser Origin has no trailing slash; env values often do — normalize so CORS matches. */
 function normalizeOrigin(origin) {

@@ -7,10 +7,12 @@ export const initSocket = (server) => {
         cors: {
             origin: (origin, cb) => {
                 const allowed = getCorsOrigins();
-                if (!origin || allowed.includes(origin))
+                if (!origin || allowed.includes(origin)) {
                     cb(null, true);
-                else
+                } else {
+                    console.warn(`⚠️ Socket.io CORS blocked for origin: ${origin}. Allowed origins: ${allowed.join(", ")}`);
                     cb(null, false);
+                }
             },
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             credentials: true,
