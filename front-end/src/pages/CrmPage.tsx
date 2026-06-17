@@ -61,11 +61,22 @@ const CrmPage: React.FC = () => {
     try {
       const { data: createdTask } = await api.post("/api/tasks", newCustomerData);
       setBoardData((prev) => {
-        const startCol = prev.columns["col-1"];
+        const targetColId = createdTask.columnId || prev.columnOrder[0] || "col-1";
+        const startCol = prev.columns[targetColId];
+        if (!startCol) {
+          // If the column doesn't exist in frontend board data, return unchanged or insert it anyway
+          return prev;
+        }
         return {
           ...prev,
           tasks: { ...prev.tasks, [createdTask.id]: { ...createdTask, activities: [] } },
-          columns: { ...prev.columns, "col-1": { ...startCol, taskIds: [createdTask.id, ...startCol.taskIds] } },
+          columns: { 
+            ...prev.columns, 
+            [targetColId]: { 
+              ...startCol, 
+              taskIds: [createdTask.id, ...startCol.taskIds] 
+            } 
+          },
         };
       });
     } catch (error) {

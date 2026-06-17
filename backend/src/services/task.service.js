@@ -1,11 +1,25 @@
 import { prisma } from "../../lib/prisma.js";
 export const createTaskService = async (taskData, createdAt) => {
     const newTaskId = `task-${Date.now()}`;
+    
+    // Find the first column ordered by 'order' ascending
+    let firstColumnId = "col-1";
+    try {
+        const columns = await prisma.column.findMany({
+            orderBy: { order: "asc" }
+        });
+        if (columns && columns.length > 0) {
+            firstColumnId = columns[0].id;
+        }
+    } catch (err) {
+        console.error("Lỗi khi tìm cột đầu tiên:", err);
+    }
+
     return prisma.task.create({
         data: {
             ...taskData,
             id: newTaskId,
-            columnId: "col-1",
+            columnId: firstColumnId,
             createdAt: createdAt ? new Date(createdAt) : new Date(),
         },
     });
