@@ -1,0 +1,119 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Column {
+  id    String @id
+  title String
+  order Int
+
+  tasks Task[]
+}
+
+model Task {
+  id          String  @id
+  content     String
+  price       String
+  phone       String
+  email       String?
+  description String?
+  source      String?
+  assignedTo  String
+
+  visaType        String?
+  passportNumber  String?
+  maritalStatus   String?
+  dependents      Int?
+  priorityDate    String?
+  educationLevel  String?
+  englishScore    String?
+  workExperience  String?
+  jobType         String?    @default("Nhân viên")
+  checklistType   String?    @default("tourism")
+  columnId        String?
+  column          Column?    @relation(fields: [columnId], references: [id])
+  createdAt       DateTime   @default(now())
+  documents       Json?      @default("{}")
+  processingColId String     @default("proc-col-1")
+  commissionPaid  Boolean    @default(false)
+  recruitmentStep String?
+  activities      Activity[]
+
+  @@index([assignedTo])
+  @@index([columnId])
+}
+
+model Activity {
+  id        String   @id
+  completed Boolean  @default(false)
+  type      String
+  summary   String
+  assignee  String
+  status    String
+  fileName  String?
+  fileUrl   String?
+  dueText   String?
+  createdAt DateTime @default(now())
+  jobType   String?  @default("Nhân viên")
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model DocFolder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  files DocFile[]
+}
+
+model DocFile {
+  id                 String     @id @default(uuid())
+  name               String
+  size               String
+  fileUrl            String
+  uploadedBy         String
+  createdAt          DateTime   @default(now())
+  cloudinaryPublicId String?
+  folderId           String?
+  folder             DocFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+model ProcessedFolder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  files ProcessedFile[]
+}
+
+model ProcessedFile {
+  id                 String           @id @default(uuid())
+  name               String
+  size               String
+  fileUrl            String
+  uploadedBy         String
+  createdAt          DateTime         @default(now())
+  cloudinaryPublicId String?
+  folderId           String?
+  folder             ProcessedFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  sender    String
+  message   String
+  receiver  String[]
+  isRead    Boolean  @default(false)
+  taskId    String?
+  createdAt DateTime @default(now())
+}

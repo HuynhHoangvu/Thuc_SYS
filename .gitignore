@@ -1,0 +1,34 @@
+.blackbox/
+.blackboxcli/
+
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-ssr/
+build/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Database data folders
+pg_data/
+pg_data_utf8/
+
+# Local uploads and logs
+uploads/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

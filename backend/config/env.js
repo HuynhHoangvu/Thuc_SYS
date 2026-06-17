@@ -1,0 +1,49 @@
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+export const NODE_ENV = process.env.NODE_ENV ?? "development";
+export const isProduction = NODE_ENV === "production";
+/**
+ * Cookie session phải cross-site khi FE và API khác domain (Railway tách 2 service).
+ * Với `sameSite: "lax"`, trình duyệt KHÔNG gửi cookie `connect.sid` khi XHR từ flyvisa... → api... → mọi `/api/*` nhận 401.
+ * Bật khi: production, có biến Railway, hoặc SESSION_CROSS_SITE=1 trong Variables.
+ */
+export const sessionCookieCrossSite = process.env.SESSION_CROSS_SITE === "1" ||
+    process.env.SESSION_CROSS_SITE === "true" ||
+    isProduction ||
+    Object.keys(process.env).some((k) => k.startsWith("RAILWAY_"));
+export const PORT = process.env.PORT ?? "3001";
+export const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
+export const SESSION_SECRET = process.env.SESSION_SECRET ?? "flyvisa-secret-key-2026";
+/** Ký JWT refresh token — nên set JWT_REFRESH_SECRET riêng trên production. */
+export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET ?? `${SESSION_SECRET}:flyvisa-jwt-refresh`;
+export const DATABASE_URL = process.env.DATABASE_URL ?? "";
+export const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME ?? "flyvisa-documents";
+export const GCS_PROJECT_ID = process.env.GCS_PROJECT_ID ?? "";
+export const GCS_CLIENT_EMAIL = process.env.GCS_CLIENT_EMAIL ?? "";
+export const GCS_PRIVATE_KEY = process.env.GCS_PRIVATE_KEY ?? "";
+export const GOOGLE_KEYFILE_PATH = path.join(process.cwd(), "config", "google-key.json");
+const DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://flyvisa.up.railway.app",
+];
+/** Browser Origin has no trailing slash; env values often do — normalize so CORS matches. */
+function normalizeOrigin(origin) {
+    const o = origin.trim();
+    return o.endsWith("/") ? o.slice(0, -1) : o;
+}
+/** Merged default origins, FRONTEND_URL, and comma-separated CORS_ORIGINS (deduped). */
+export function getCorsOrigins() {
+    const fromEnv = (process.env.CORS_ORIGINS ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    const merged = [...DEFAULT_CORS_ORIGINS, FRONTEND_URL, ...fromEnv];
+    return [...new Set(merged.filter(Boolean).map(normalizeOrigin))];
+}
+export function assertDatabaseUrl() {
+    if (!DATABASE_URL) {
+        throw new Error("DATABASE_URL is not defined in environment variables.");
+    }
+}

@@ -1,0 +1,238 @@
+/**
+ * FlyVisa Theme System v1.0
+ * 
+ * Quản lý tập trung tất cả colors, fonts, spacing cho toàn bộ app.
+ * Sử dụng: @import "./styles/theme.css" trong index.css
+ * 
+ * Cách dùng trong component:
+ * - Dùng CSS variables: var(--fv-primary), var(--fv-bg-card), v.v.
+ * - Hoặc dùng Tailwind: bg-[var(--fv-primary)]
+ */
+
+/* ============================================
+   THEME: PANDA (Xanh trúc - Màu mặc định)
+   ============================================ */
+@theme {
+  /* Primary Colors - Xanh trúc */
+  --fv-primary: #22c55e;
+  --fv-primary-dark: #16a34a;
+  --fv-primary-light: #4ade80;
+  
+  /* Backgrounds */
+  --fv-bg-main: #f3f4f6;
+  --fv-bg-card: #ffffff;
+  --fv-bg-card-hover: #f9fafb;
+  --fv-bg-column: rgba(255, 255, 255, 0.72);
+  --fv-bg-column-header: linear-gradient(135deg, #e8f5e3 0%, #d4ead0 100%);
+  
+  /* Text Colors */
+  --fv-text-primary: #1f2937;
+  --fv-text-secondary: #6b7280;
+  --fv-text-accent: #166534;
+  
+  /* Borders */
+  --fv-border: #d4e8cc;
+  --fv-border-hover: #10b981;
+  --fv-border-column: #cee7c4;
+  
+  /* Shadows */
+  --fv-shadow-card: 0 2px 8px rgba(16, 185, 129, 0.06);
+  --fv-shadow-card-hover: 0 6px 20px rgba(16, 185, 129, 0.12);
+  --fv-shadow-column: 0 4px 16px rgba(16, 185, 129, 0.05);
+  
+  /* Accent Colors */
+  --fv-accent: #10b981;
+  --fv-accent-2: #22c55e;
+
+  /* Sidebar/Navigation styles */
+  --fv-sidebar-bg: #112211;
+  --fv-sidebar-active-bg: rgba(34, 197, 94, 0.2);
+  --fv-sidebar-active-text: #4ade80;
+  --fv-sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --fv-sidebar-hover-text: #f8fafc;
+  --fv-sidebar-inactive-text: #94a3b8;
+  --fv-sidebar-border: #1e3f24;
+}
+
+/* ============================================
+   THEME: TET (Đỏ + Vàng - Vietnamese New Year)
+   ============================================ */
+.theme-tet {
+  /* Primary Colors - Đỏ Tết */
+  --fv-primary: #C41E3A;
+  --fv-primary-dark: #8B0000;
+  --fv-primary-light: #E53935;
+  
+  /* Backgrounds */
+  --fv-bg-main: #fff8f0;
+  --fv-bg-card: #ffffff;
+  --fv-bg-card-hover: #FFFBF5;
+  --fv-bg-column: rgba(255, 243, 224, 0.85);
+  --fv-bg-column-header: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+  
+  /* Text Colors */
+  --fv-text-primary: #1a1a1a;
+  --fv-text-secondary: #5a5a5a;
+  --fv-text-accent: #FFD700;
+  
+  /* Borders */
+  --fv-border: #D4AF37;
+  --fv-border-hover: #C41E3A;
+  --fv-border-column: #D4AF37;
+  
+  /* Shadows */
+  --fv-shadow-card: 0 2px 8px rgba(196, 30, 58, 0.08);
+  --fv-shadow-card-hover: 0 6px 20px rgba(196, 30, 58, 0.15);
+  --fv-shadow-column: 0 4px 16px rgba(196, 30, 58, 0.08);
+  
+  /* Accent Colors */
+  --fv-accent: #FFD700;
+  --fv-accent-2: #D4AF37;
+
+  /* Sidebar/Navigation styles */
+  --fv-sidebar-bg: #5c0612;
+  --fv-sidebar-active-bg: rgba(255, 215, 0, 0.2);
+  --fv-sidebar-active-text: #FFD700;
+  --fv-sidebar-hover-bg: rgba(255, 255, 255, 0.10);
+  --fv-sidebar-hover-text: #ffffff;
+  --fv-sidebar-inactive-text: #fecdd3;
+  --fv-sidebar-border: #8b0000;
+}
+
+/* ============================================
+   THEME: JAPAN (Hoa anh đào - Japanese Cherry Blossom)
+   ============================================ */
+.theme-japan {
+  /* Primary Colors - Hồng Anh Đào */
+  --fv-primary: #D05A6E;
+  --fv-primary-dark: #9F3548;
+  --fv-primary-light: #FBCFE8;
+  
+  /* Backgrounds */
+  --fv-bg-main: #FDF5F6;
+  --fv-bg-card: #FFFFFF;
+  --fv-bg-card-hover: #FEF0F2;
+  --fv-bg-column: rgba(255, 240, 242, 0.85);
+  --fv-bg-column-header: linear-gradient(135deg, #FBCFE8 0%, #FDA4AF 100%);
+  
+  /* Text Colors */
+  --fv-text-primary: #2A171A;
+  --fv-text-secondary: #6B565A;
+  --fv-text-accent: #B91C1C;
+  
+  /* Borders */
+  --fv-border: #F3CBD1;
+  --fv-border-hover: #D05A6E;
+  --fv-border-column: #FBCFE8;
+  
+  /* Shadows */
+  --fv-shadow-card: 0 2px 8px rgba(208, 90, 110, 0.06);
+  --fv-shadow-card-hover: 0 6px 20px rgba(208, 90, 110, 0.12);
+  --fv-shadow-column: 0 4px 16px rgba(208, 90, 110, 0.05);
+  
+  /* Accent Colors */
+  --fv-accent: #D05A6E;
+  --fv-accent-2: #FDA4AF;
+
+  /* Sidebar/Navigation styles */
+  --fv-sidebar-bg: #2d1418;
+  --fv-sidebar-active-bg: rgba(253, 164, 175, 0.25);
+  --fv-sidebar-active-text: #fda4af;
+  --fv-sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --fv-sidebar-hover-text: #f8fafc;
+  --fv-sidebar-inactive-text: #cbd5e1;
+  --fv-sidebar-border: #442125;
+}
+
+/* ============================================
+   COMPONENT STYLES (Dùng CSS Variables)
+   ============================================ */
+
+/* Card Component */
+.fv-card {
+  background: var(--fv-bg-card);
+  border: 1px solid var(--fv-border);
+  border-radius: 12px;
+  box-shadow: var(--fv-shadow-card);
+  transition: all 0.2s ease;
+}
+
+.fv-card:hover {
+  box-shadow: var(--fv-shadow-card-hover);
+  border-color: var(--fv-border-hover);
+  transform: translateY(-2px);
+}
+
+/* Column Component */
+.fv-column {
+  background: var(--fv-bg-column);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--fv-border-column);
+  border-radius: 16px;
+  box-shadow: var(--fv-shadow-column);
+}
+
+.fv-column-header {
+  background: var(--fv-bg-column-header);
+  border-bottom: 1px solid var(--fv-border-column);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Button Primary */
+.fv-btn-primary {
+  background: var(--fv-primary);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.fv-btn-primary:hover {
+  background: var(--fv-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Text Accent */
+.fv-text-accent {
+  color: var(--fv-text-accent);
+}
+
+/* Border Accent */
+.fv-border-accent {
+  border-color: var(--fv-border);
+}
+
+/* Sidebar Component */
+.fv-sidebar {
+  background: var(--fv-sidebar-bg);
+  border-right: 1px solid var(--fv-sidebar-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fv-sidebar-link-active {
+  background: var(--fv-sidebar-active-bg);
+  color: var(--fv-sidebar-active-text);
+}
+
+.fv-sidebar-link-inactive {
+  color: var(--fv-sidebar-inactive-text);
+  transition: all 0.15s ease;
+}
+
+.fv-sidebar-link-inactive:hover {
+  background: var(--fv-sidebar-hover-bg);
+  color: var(--fv-sidebar-hover-text);
+}
+
+/* Force Flowbite React Modals to be perfectly centered vertically and horizontally */
+div[role="dialog"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+div[role="dialog"] > div {
+  margin: auto !important;
+}

@@ -1,0 +1,67 @@
+import { Router } from "express";
+import { createTask, deleteTask, moveProcessingTask, moveTask, sendNotification, updateTask } from "../controllers/task.controller.js";
+import { uploadDoc, uploadToGCS, bucket } from "../middlewares/upload.js";
+const router = Router();
+router.put("/:id/processing-move", moveProcessingTask);
+router.post("/notifications/send", sendNotification);
+router.post("/", createTask);
+router.put("/:id", updateTask);
+router.delete("/:id", deleteTask);
+router.put("/:id/move", moveTask);
+router.put("/:id/processing-move", moveProcessingTask);
+// UPLOAD TASK DOCUMENT
+router.post("/upload", uploadDoc.single("file"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "Không có file được tải lên" });
+        }
+        const decodedName = Buffer.from(req.file.originalname, "latin1").toString("utf8");
+        const gcsResult = await uploadToGCS(req.file.path, "tasks-documents", decodedName);
+        res.status(201).json({
+            name: decodedName,
+            url: gcsResult.url,
+            publicId: gcsResult.publicId
+        });
+    }
+    catch (error) {
+        console.error("Lỗi upload task document lên GCS:", error);
+        res.status(500).json({ error: "Lỗi xử lý file đính kèm" });
+    }
+});
+router.post("/remove-cloud-file", async (req, res) => {
+    try {
+        const { publicId } = req.body;
+        if (!publicId) {
+            return res.status(400).json({ error: "Thiếu publicId của file" });
+        }
+        await bucket.file(publicId).delete().catch(() => console.log("File không tồn tại trên GCS"));
+        res.json({ message: "Đã xoá file vĩnh viễn khỏi hệ thống" });
+    }
+    catch (error) {
+        console.error("Lỗi xoá file GCS:", error);
+        res.status(500).json({ error: "Không thể xoá file" });
+    }
+});
+router.get("/download-proxy", async (req, res) => {
+    try {
+        const { url, name } = req.query;
+        if (!url) {
+            return res.status(400).json({ error: "Thiếu url file" });
+        }
+        const response = await fetch(decodeURIComponent(url));
+        if (!response.ok) {
+            return res.status(response.status).json({ error: "Không thể tải file từ nguồn" });
+        }
+        res.setHeader("Content-Type", response.headers.get("content-type") || "application/octet-stream");
+        if (name) {
+            res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(name)}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        res.send(Buffer.from(arrayBuffer));
+    }
+    catch (error) {
+        console.error("Lỗi download proxy:", error);
+        res.status(500).json({ error: "Lỗi tải file trung gian" });
+    }
+});
+export default router;
