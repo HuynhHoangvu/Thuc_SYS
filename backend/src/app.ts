@@ -8,6 +8,7 @@ import { env, allowedOrigins } from './config/env';
 import { swaggerSpec } from './config/swagger';
 import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { ForbiddenError } from './shared/errors/AppError';
 
 export function createApp(): Application {
   const app = express();
@@ -21,7 +22,7 @@ export function createApp(): Application {
           callback(null, true);
         } else {
           console.warn(`CORS blocked request from origin: ${origin}`);
-          callback(new Error('Not allowed by CORS'));
+          callback(new ForbiddenError('Not allowed by CORS'));
         }
       },
       credentials: true,
