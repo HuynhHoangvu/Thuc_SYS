@@ -20,8 +20,11 @@ export const studentRepository = {
   },
 
   async list(query: ListStudentsQuery) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    // The validate middleware discards Zod's coerced result, so page/limit can still
+    // arrive as raw query-string values here — coerce again before using them in $skip/$limit,
+    // which (unlike Query#limit) reject non-numeric input outright.
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 20;
     const filter: FilterQuery<IStudent> = {};
 
     if (query.stage) filter.stage = query.stage;
