@@ -16,3 +16,10 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
+
+// CLIENT_URL may list multiple comma-separated origins (e.g. prod + local dev).
+// Trim whitespace and trailing slashes so a stray space or "/" pasted into the
+// Render dashboard doesn't silently break the exact-string CORS match.
+export const allowedOrigins = env.CLIENT_URL.split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
