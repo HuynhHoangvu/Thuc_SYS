@@ -1,0 +1,31 @@
+import { prisma } from '@/lib/prisma';
+import { noContent, ok, withErrorHandling } from '@/lib/api-handler';
+import { NotFoundError } from '@/lib/errors';
+import { countryToDb, toTemplateDTO, updateTemplateSchema } from '@/lib/workflow/dto';
+import type { Prisma } from '@/generated/prisma/client';
+
+export const PUT = withErrorHandling(async (req, { params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
+  const body = updateTemplateSchema.parse(await req.json());
+
+  const exists = await prisma.workflowTemplate.findUnique({ where: { id } });
+  if (!exists) throw new NotFoundError('Workflow template not found');
+
+  const data: Prisma.WorkflowTemplateUpdateInput = {};
+  if (body.name !== undefined) data.name = body.name;
+  if (body.country !== undefined) data.country = countryToDb(body.country);
+  if (body.description !== undefined) data.description = body.description;
+  if (body.steps !== undefined) data.steps = body.steps;
+  if (body.isActive !== undefined) data.isActive = body.isActive;
+
+  const template = await prisma.workflowTemplate.update({ where: { id }, data });
+  return ok(toTemplateDTO(template));
+});
+
+export const DELETE = withErrorHandling(async (_req, { params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
+  const exists = await prisma.workflowTemplate.findUnique({ where: { id } });
+  if (!exists) throw new NotFoundError('Workflow template not found');
+  await prisma.workflowTemplate.delete({ where: { id } });
+  return noContent();
+});

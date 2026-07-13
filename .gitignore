@@ -8,3 +8,7 @@ uploads/
 coverage/
 .DS_Store
 Thumbs.db
+.next/
+.vercel/
+*.tsbuildinfo
+src/generated/
