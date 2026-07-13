@@ -9,6 +9,7 @@ import { formApi } from '@/features/forms/form.api';
 import { CreateWorkflowModal } from './CreateWorkflowModal';
 import { CreateChecklistModal } from './CreateChecklistModal';
 import { CreateFormTemplateModal } from './CreateFormTemplateModal';
+import { StagesSection } from '@/features/stages/StagesSection';
 
 const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
 
@@ -37,6 +38,8 @@ export function TemplatesPage() {
       <h1 className="mb-6 text-2xl font-semibold text-foreground">Mẫu quy trình</h1>
 
       <div className="flex flex-col gap-6">
+        <StagesSection />
+
         <div className="rounded-lg border border-border bg-card p-5">
           <SectionHeader title="Mẫu quy trình (Workflow)" onAdd={() => setIsWorkflowOpen(true)} />
           <div className="flex flex-col divide-y divide-border">

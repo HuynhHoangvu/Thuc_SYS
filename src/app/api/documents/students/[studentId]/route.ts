@@ -1,13 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 import { BadRequestError } from '@/lib/errors';
 import { toDocumentDTO } from '@/lib/documents/dto';
-import { uploadToBlob } from '@/lib/blob';
 
 export const GET = withErrorHandling(async (_req, { params }: { params: Promise<{ studentId: string }> }) => {
   const { studentId } = await params;
   const docs = await prisma.studentDocument.findMany({
     where: { studentId },
+    omit: { data: true },
     orderBy: [{ category: 'asc' }, { version: 'desc' }],
   });
   return ok(docs.map(toDocumentDTO));
@@ -26,21 +27,23 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
     orderBy: { version: 'desc' },
   });
 
-  const { storedName, url } = await uploadToBlob(file);
+  const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : '';
+  const data = Buffer.from(await file.arrayBuffer());
 
   const doc = await prisma.studentDocument.create({
     data: {
       studentId,
       category,
       originalName: file.name,
-      storedName,
+      storedName: `${randomUUID()}${ext}`,
       mimeType: file.type || 'application/octet-stream',
       size: file.size,
-      url,
+      data,
       version: latest ? latest.version + 1 : 1,
       previousVersionId: latest?.id,
       virusScanStatus: 'clean',
     },
+    omit: { data: true },
   });
   return ok(toDocumentDTO(doc), 201);
 });

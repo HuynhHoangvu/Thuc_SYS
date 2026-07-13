@@ -7,5 +7,12 @@ export const GET = withErrorHandling(async (_req, { params }: { params: Promise<
   const { id } = await params;
   const doc = await prisma.studentDocument.findUnique({ where: { id } });
   if (!doc) throw new NotFoundError('Document not found');
-  return NextResponse.redirect(doc.url, 302);
+
+  return new NextResponse(new Uint8Array(doc.data), {
+    headers: {
+      'Content-Type': doc.mimeType,
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(doc.originalName)}"`,
+      'Content-Length': String(doc.size),
+    },
+  });
 });

@@ -1,6 +1,7 @@
 import type { Prisma } from '@/generated/prisma/client';
 
-type Doc = Prisma.StudentDocumentGetPayload<Record<string, never>>;
+// Never select `data` here — it's the file's binary content and would bloat list/detail responses.
+type Doc = Prisma.StudentDocumentGetPayload<{ omit: { data: true } }>;
 
 export function toDocumentDTO(doc: Doc) {
   return {
@@ -11,7 +12,7 @@ export function toDocumentDTO(doc: Doc) {
     storedName: doc.storedName,
     mimeType: doc.mimeType,
     size: doc.size,
-    url: doc.url,
+    url: `/api/documents/${doc.id}/download`,
     version: doc.version,
     virusScanStatus: doc.virusScanStatus,
     createdAt: doc.createdAt,

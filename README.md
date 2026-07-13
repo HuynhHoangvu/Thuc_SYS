@@ -10,7 +10,7 @@ There is currently no authentication layer — every endpoint is open. See
 - **Next.js 16** (App Router) — single project for both the UI and the API (Route Handlers under `src/app/api`).
 - **React 19**, TypeScript, Tailwind CSS v4, TanStack Query, Radix UI, React Hook Form + Zod.
 - **Prisma 7** with the `@prisma/adapter-pg` driver adapter, **PostgreSQL** hosted on **Neon**.
-- **Vercel Blob** for document/file storage (documents feature).
+- Document files are stored as `bytea` directly in Postgres (see `StudentDocument.data`) — no external storage needed.
 - Deploys to **Vercel** as one project.
 
 ## Project layout
@@ -36,7 +36,7 @@ editable field (`StageSelect`) on the student list/profile, backed by a static s
 
 ```
 npm install
-cp .env.example .env     # set DATABASE_URL (Neon) and BLOB_READ_WRITE_TOKEN
+cp .env.example .env     # set DATABASE_URL (Neon)
 npx prisma generate
 npx prisma migrate dev   # only needed when the schema changes
 npm run dev              # http://localhost:3000
@@ -45,10 +45,9 @@ npm run dev              # http://localhost:3000
 ## Deploying to Vercel
 
 1. Push this repo to GitHub and import it in Vercel.
-2. Set environment variables in the Vercel project: `DATABASE_URL` (Neon pooled connection string)
-   and `BLOB_READ_WRITE_TOKEN` (enable Vercel Blob storage for the project to get this automatically).
+2. Set the `DATABASE_URL` environment variable in the Vercel project (Neon pooled connection string).
 3. Vercel auto-detects Next.js — no extra build config needed. `prisma generate` runs via the
-   `postinstall` hook (add one if you fork this) or as part of `next build`.
+   `postinstall` script in `package.json`.
 
 ## API
 

@@ -40,6 +40,16 @@ enum VirusScanStatus {
   infected
 }
 
+model StageTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String
+  color     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Student {
   id String @id @default(cuid())
 
@@ -187,7 +197,7 @@ model StudentDocument {
   storedName        String
   mimeType          String
   size              Int
-  url               String
+  data              Bytes
   version           Int             @default(1)
   previousVersionId String?
   ocrStatus         OcrStatus       @default(not_applicable)
