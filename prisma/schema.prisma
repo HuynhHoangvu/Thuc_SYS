@@ -61,6 +61,7 @@ model Student {
   passportNumber String?
   passportExpiry DateTime?
   email          String
+  emailPassword  String?
   phone          String?
   address        String?
 
@@ -71,6 +72,7 @@ model Student {
   graduationYear   Int?
   englishTest      EnglishTest?
   englishScore     String?
+  englishTestDate  DateTime?
 
   // study abroad
   destinationCountry    DestinationCountry?
@@ -79,6 +81,7 @@ model Student {
   preferredUniversities String[]
   preferredMajor        String?
   visaType              String?
+  visaIssuedDate        DateTime?
   visaExpiry            DateTime?
   sevisId               String?
   i20Number             String?

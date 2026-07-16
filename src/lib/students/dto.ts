@@ -9,6 +9,7 @@ const personalSchema = z.object({
   passportNumber: z.string().optional(),
   passportExpiry: z.coerce.date().optional(),
   email: z.string().email(),
+  emailPassword: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -20,6 +21,7 @@ const academicSchema = z.object({
   graduationYear: z.number().optional(),
   englishTest: z.enum(['IELTS', 'TOEFL', 'PTE', 'Duolingo', 'None']).optional(),
   englishScore: z.string().optional(),
+  englishTestDate: z.coerce.date().optional(),
 });
 
 const studyAbroadSchema = z.object({
@@ -29,6 +31,7 @@ const studyAbroadSchema = z.object({
   preferredUniversities: z.array(z.string()).optional(),
   preferredMajor: z.string().optional(),
   visaType: z.string().optional(),
+  visaIssuedDate: z.coerce.date().optional(),
   visaExpiry: z.coerce.date().optional(),
   sevisId: z.string().optional(),
   i20Number: z.string().optional(),
@@ -76,6 +79,7 @@ export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInp
     passportNumber: input.personal.passportNumber,
     passportExpiry: input.personal.passportExpiry,
     email: input.personal.email.toLowerCase().trim(),
+    emailPassword: input.personal.emailPassword,
     phone: input.personal.phone,
     address: input.personal.address,
     highestEducation: input.academic?.highestEducation,
@@ -84,6 +88,7 @@ export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInp
     graduationYear: input.academic?.graduationYear,
     englishTest: input.academic?.englishTest,
     englishScore: input.academic?.englishScore,
+    englishTestDate: input.academic?.englishTestDate,
     destinationCountry: input.studyAbroad?.destinationCountry
       ? (countryDtoToDb[input.studyAbroad.destinationCountry] as never)
       : undefined,
@@ -92,6 +97,7 @@ export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInp
     preferredUniversities: input.studyAbroad?.preferredUniversities ?? [],
     preferredMajor: input.studyAbroad?.preferredMajor,
     visaType: input.studyAbroad?.visaType,
+    visaIssuedDate: input.studyAbroad?.visaIssuedDate,
     visaExpiry: input.studyAbroad?.visaExpiry,
     sevisId: input.studyAbroad?.sevisId,
     i20Number: input.studyAbroad?.i20Number,
@@ -114,6 +120,7 @@ export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInp
     if (p.passportNumber !== undefined) data.passportNumber = p.passportNumber;
     if (p.passportExpiry !== undefined) data.passportExpiry = p.passportExpiry;
     if (p.email !== undefined) data.email = p.email.toLowerCase().trim();
+    if (p.emailPassword !== undefined) data.emailPassword = p.emailPassword;
     if (p.phone !== undefined) data.phone = p.phone;
     if (p.address !== undefined) data.address = p.address;
   }
@@ -125,6 +132,7 @@ export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInp
     if (a.graduationYear !== undefined) data.graduationYear = a.graduationYear;
     if (a.englishTest !== undefined) data.englishTest = a.englishTest;
     if (a.englishScore !== undefined) data.englishScore = a.englishScore;
+    if (a.englishTestDate !== undefined) data.englishTestDate = a.englishTestDate;
   }
   const s = input.studyAbroad;
   if (s) {
@@ -134,6 +142,7 @@ export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInp
     if (s.preferredUniversities !== undefined) data.preferredUniversities = s.preferredUniversities;
     if (s.preferredMajor !== undefined) data.preferredMajor = s.preferredMajor;
     if (s.visaType !== undefined) data.visaType = s.visaType;
+    if (s.visaIssuedDate !== undefined) data.visaIssuedDate = s.visaIssuedDate;
     if (s.visaExpiry !== undefined) data.visaExpiry = s.visaExpiry;
     if (s.sevisId !== undefined) data.sevisId = s.sevisId;
     if (s.i20Number !== undefined) data.i20Number = s.i20Number;
@@ -159,6 +168,7 @@ export function toStudentDTO(student: StudentWithTodos) {
       passportNumber: student.passportNumber,
       passportExpiry: student.passportExpiry,
       email: student.email,
+      emailPassword: student.emailPassword,
       phone: student.phone,
       address: student.address,
     },
@@ -169,6 +179,7 @@ export function toStudentDTO(student: StudentWithTodos) {
       graduationYear: student.graduationYear,
       englishTest: student.englishTest,
       englishScore: student.englishScore,
+      englishTestDate: student.englishTestDate,
     },
     studyAbroad: {
       destinationCountry: student.destinationCountry ? countryDbToDto[student.destinationCountry] : undefined,
@@ -177,6 +188,7 @@ export function toStudentDTO(student: StudentWithTodos) {
       preferredUniversities: student.preferredUniversities,
       preferredMajor: student.preferredMajor,
       visaType: student.visaType,
+      visaIssuedDate: student.visaIssuedDate,
       visaExpiry: student.visaExpiry,
       sevisId: student.sevisId,
       i20Number: student.i20Number,

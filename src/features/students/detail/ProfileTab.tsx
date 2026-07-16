@@ -13,6 +13,7 @@ interface ProfileTabProps {
 type FormValues = {
   fullName: string;
   email: string;
+  emailPassword: string;
   phone: string;
   dateOfBirth: string;
   nationality: string;
@@ -22,10 +23,13 @@ type FormValues = {
   gpa: string;
   englishTest: string;
   englishScore: string;
+  englishTestDate: string;
   destinationCountry: string;
   intakeTerm: string;
   intakeYear: string;
+  preferredUniversities: string;
   preferredMajor: string;
+  visaIssuedDate: string;
   visaExpiry: string;
 };
 
@@ -33,6 +37,7 @@ function toFormValues(student: Student): FormValues {
   return {
     fullName: student.personal.fullName ?? '',
     email: student.personal.email ?? '',
+    emailPassword: student.personal.emailPassword ?? '',
     phone: student.personal.phone ?? '',
     dateOfBirth: student.personal.dateOfBirth ? student.personal.dateOfBirth.slice(0, 10) : '',
     nationality: student.personal.nationality ?? '',
@@ -42,10 +47,13 @@ function toFormValues(student: Student): FormValues {
     gpa: student.academic?.gpa?.toString() ?? '',
     englishTest: student.academic?.englishTest ?? '',
     englishScore: student.academic?.englishScore ?? '',
+    englishTestDate: student.academic?.englishTestDate ? student.academic.englishTestDate.slice(0, 10) : '',
     destinationCountry: student.studyAbroad?.destinationCountry ?? '',
     intakeTerm: student.studyAbroad?.intakeTerm ?? '',
     intakeYear: student.studyAbroad?.intakeYear?.toString() ?? '',
+    preferredUniversities: (student.studyAbroad?.preferredUniversities ?? []).join(', '),
     preferredMajor: student.studyAbroad?.preferredMajor ?? '',
+    visaIssuedDate: student.studyAbroad?.visaIssuedDate ? student.studyAbroad.visaIssuedDate.slice(0, 10) : '',
     visaExpiry: student.studyAbroad?.visaExpiry ? student.studyAbroad.visaExpiry.slice(0, 10) : '',
   };
 }
@@ -75,6 +83,7 @@ export function ProfileTab({ student }: ProfileTabProps) {
       personal: {
         fullName: values.fullName,
         email: values.email,
+        emailPassword: values.emailPassword || undefined,
         phone: values.phone || undefined,
         dateOfBirth: values.dateOfBirth || undefined,
         nationality: values.nationality || undefined,
@@ -86,12 +95,17 @@ export function ProfileTab({ student }: ProfileTabProps) {
         gpa: values.gpa ? Number(values.gpa) : undefined,
         englishTest: (values.englishTest || undefined) as Student['academic']['englishTest'],
         englishScore: values.englishScore || undefined,
+        englishTestDate: values.englishTestDate || undefined,
       },
       studyAbroad: {
         destinationCountry: (values.destinationCountry || undefined) as Student['studyAbroad']['destinationCountry'],
         intakeTerm: values.intakeTerm || undefined,
         intakeYear: values.intakeYear ? Number(values.intakeYear) : undefined,
+        preferredUniversities: values.preferredUniversities
+          ? values.preferredUniversities.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined,
         preferredMajor: values.preferredMajor || undefined,
+        visaIssuedDate: values.visaIssuedDate || undefined,
         visaExpiry: values.visaExpiry || undefined,
       },
     });
@@ -109,6 +123,10 @@ export function ProfileTab({ student }: ProfileTabProps) {
           <div>
             <label className={labelClass}>Email</label>
             <input {...register('email')} type="email" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Mật khẩu email</label>
+            <input {...register('emailPassword')} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Số điện thoại</label>
@@ -159,6 +177,10 @@ export function ProfileTab({ student }: ProfileTabProps) {
             <label className={labelClass}>Điểm số</label>
             <input {...register('englishScore')} className={inputClass} />
           </div>
+          <div>
+            <label className={labelClass}>Ngày thi chứng chỉ</label>
+            <input {...register('englishTestDate')} type="date" className={inputClass} />
+          </div>
         </div>
       </section>
 
@@ -179,12 +201,20 @@ export function ProfileTab({ student }: ProfileTabProps) {
             <input {...register('preferredMajor')} className={inputClass} />
           </div>
           <div>
+            <label className={labelClass}>Trường mong muốn</label>
+            <input {...register('preferredUniversities')} placeholder="Cách nhau bởi dấu phẩy" className={inputClass} />
+          </div>
+          <div>
             <label className={labelClass}>Kỳ nhập học</label>
             <input {...register('intakeTerm')} placeholder="VD: Mùa thu" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Năm nhập học</label>
             <input {...register('intakeYear')} type="number" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Ngày cấp visa</label>
+            <input {...register('visaIssuedDate')} type="date" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Thời hạn visa</label>

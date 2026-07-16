@@ -13,6 +13,7 @@ export interface Student {
   personal: {
     fullName: string;
     email: string;
+    emailPassword?: string;
     phone?: string;
     dateOfBirth?: string;
     nationality?: string;
@@ -26,12 +27,15 @@ export interface Student {
     graduationYear?: number;
     englishTest?: 'IELTS' | 'TOEFL' | 'PTE' | 'Duolingo' | 'None';
     englishScore?: string;
+    englishTestDate?: string;
   };
   studyAbroad: {
     destinationCountry?: DestinationCountry;
     intakeTerm?: string;
     intakeYear?: number;
+    preferredUniversities?: string[];
     preferredMajor?: string;
+    visaIssuedDate?: string;
     visaExpiry?: string;
   };
   stage: StudentStage;
