@@ -28,4 +28,8 @@ export const stageApi = {
     const res = await api.delete<{ success: boolean; data: { movedStudentsTo: string } }>(`/stages/${id}`);
     return res.data.data;
   },
+  async reorder(stages: Array<{ id: string; order: number }>): Promise<Stage[]> {
+    const res = await api.put<ListResponse>('/stages/reorder', { stages });
+    return res.data.data;
+  },
 };
