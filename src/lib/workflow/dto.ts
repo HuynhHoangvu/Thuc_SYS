@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Prisma } from '@/generated/prisma/client';
+import type { WorkflowTemplateDoc } from '@/models/WorkflowTemplate';
+import type { WorkflowProgressDoc } from '@/models/WorkflowProgress';
 
 const stepSchema = z.object({
   key: z.string().min(1),
@@ -30,29 +31,31 @@ const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', N
 const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
 
 export function countryToDb(country?: string) {
-  return country ? (countryDtoToDb[country] as never) : undefined;
+  return country ? countryDtoToDb[country] : undefined;
 }
 
-type Template = Prisma.WorkflowTemplateGetPayload<Record<string, never>>;
+type Template = Pick<WorkflowTemplateDoc, 'name' | 'country' | 'description' | 'steps' | 'isActive'> & {
+  _id: unknown;
+};
 
 export function toTemplateDTO(template: Template) {
   return {
-    id: template.id,
+    id: String(template._id),
     name: template.name,
     country: template.country ? countryDbToDto[template.country] : undefined,
     description: template.description ?? undefined,
-    steps: template.steps as WorkflowStep[],
+    steps: template.steps as unknown as WorkflowStep[],
     isActive: template.isActive,
   };
 }
 
-type ProgressWithTemplate = Prisma.WorkflowProgressGetPayload<{ include: { template: true } }>;
+type Progress = Pick<WorkflowProgressDoc, 'studentId' | 'steps'> & { _id: unknown };
 
-export function toProgressDTO(progress: ProgressWithTemplate) {
+export function toProgressDTO(progress: Progress, template: Template) {
   return {
-    id: progress.id,
+    id: String(progress._id),
     student: progress.studentId,
-    template: toTemplateDTO(progress.template),
-    steps: progress.steps as Array<{ key: string; completed: boolean; completedAt?: string }>,
+    template: toTemplateDTO(template),
+    steps: progress.steps as unknown as Array<{ key: string; completed: boolean; completedAt?: string }>,
   };
 }

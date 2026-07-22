@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Users, ListChecks, X } from 'lucide-react';
+import { Menu, Users, ListChecks, Plane, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { to: '/students', label: 'Học sinh', icon: Users },
+  { to: '/travelers', label: 'Du lịch', icon: Plane },
   { to: '/templates', label: 'Mẫu quy trình', icon: ListChecks },
 ];
 

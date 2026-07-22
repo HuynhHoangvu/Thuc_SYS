@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Prisma } from '@/generated/prisma/client';
+import type { StageTemplateDoc } from '@/models/StageTemplate';
 
 export const createStageSchema = z.object({
   key: z
@@ -9,6 +9,7 @@ export const createStageSchema = z.object({
   title: z.string().min(1),
   color: z.string().optional(),
   order: z.number().optional(),
+  type: z.enum(['student', 'travel']).default('student'),
 });
 
 export const updateStageSchema = z.object({
@@ -20,10 +21,17 @@ export const updateStageSchema = z.object({
 export type CreateStageInput = z.infer<typeof createStageSchema>;
 export type UpdateStageInput = z.infer<typeof updateStageSchema>;
 
-type Stage = Prisma.StageTemplateGetPayload<Record<string, never>>;
+type StageLike = Pick<StageTemplateDoc, 'key' | 'title' | 'color' | 'order' | 'type'> & { _id: unknown };
 
-export function toStageDTO(stage: Stage) {
-  return { id: stage.id, key: stage.key, title: stage.title, color: stage.color ?? undefined, order: stage.order };
+export function toStageDTO(stage: StageLike) {
+  return {
+    id: String(stage._id),
+    key: stage.key,
+    title: stage.title,
+    color: stage.color ?? undefined,
+    order: stage.order,
+    type: stage.type,
+  };
 }
 
 export const DEFAULT_STAGES: Array<{ key: string; title: string; color: string; order: number }> = [
@@ -34,4 +42,14 @@ export const DEFAULT_STAGES: Array<{ key: string; title: string; color: string; 
   { key: 'visa', title: 'Visa', color: '#c4b5fd', order: 4 },
   { key: 'enrolled', title: 'Đã nhập học', color: '#86efac', order: 5 },
   { key: 'closed', title: 'Đóng', color: '#d4d4d8', order: 6 },
+];
+
+export const DEFAULT_TRAVEL_STAGES: Array<{ key: string; title: string; color: string; order: number }> = [
+  { key: 'thu_thap_ho_so', title: 'Thu thập hồ sơ', color: '#fbcfe8', order: 0 },
+  { key: 'chuan_bi_tai_chinh', title: 'Chuẩn bị tài chính', color: '#fde68a', order: 1 },
+  { key: 'nop_don', title: 'Nộp đơn', color: '#bae6fd', order: 2 },
+  { key: 'phong_van', title: 'Phỏng vấn', color: '#a5f3fc', order: 3 },
+  { key: 'dau_visa', title: 'Đậu visa', color: '#a7f3d0', order: 4 },
+  { key: 'roi_visa', title: 'Rớt visa', color: '#fecaca', order: 5 },
+  { key: 'hoan_tat', title: 'Hoàn tất', color: '#d4d4d8', order: 6 },
 ];

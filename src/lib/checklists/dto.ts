@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Prisma } from '@/generated/prisma/client';
+import type { ChecklistTemplateDoc } from '@/models/ChecklistTemplate';
+import type { ChecklistProgressDoc } from '@/models/ChecklistProgress';
 
 const itemSchema = z.object({
   key: z.string().min(1),
@@ -20,28 +21,28 @@ const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', N
 const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
 
 export function countryToDb(country: string) {
-  return countryDtoToDb[country] as never;
+  return countryDtoToDb[country];
 }
 
-type Template = Prisma.ChecklistTemplateGetPayload<Record<string, never>>;
+type Template = Pick<ChecklistTemplateDoc, 'name' | 'country' | 'items'> & { _id: unknown };
 
 export function toTemplateDTO(template: Template) {
   return {
-    id: template.id,
+    id: String(template._id),
     name: template.name,
     country: countryDbToDto[template.country],
-    items: template.items as ChecklistItem[],
+    items: template.items as unknown as ChecklistItem[],
   };
 }
 
-type ProgressWithTemplate = Prisma.ChecklistProgressGetPayload<{ include: { template: true } }>;
+type Progress = Pick<ChecklistProgressDoc, 'studentId' | 'items'> & { _id: unknown };
 
-export function toProgressDTO(progress: ProgressWithTemplate) {
+export function toProgressDTO(progress: Progress, template: Template) {
   return {
-    id: progress.id,
+    id: String(progress._id),
     student: progress.studentId,
-    template: toTemplateDTO(progress.template),
-    items: progress.items as Array<{ key: string; completed: boolean; completedAt?: string }>,
+    template: toTemplateDTO(template),
+    items: progress.items as unknown as Array<{ key: string; completed: boolean; completedAt?: string }>,
   };
 }
 

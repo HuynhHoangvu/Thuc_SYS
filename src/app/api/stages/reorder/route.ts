@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { connectDB } from '@/lib/mongoose';
+import { StageTemplate } from '@/models/StageTemplate';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 import { toStageDTO } from '@/lib/stages/dto';
 
@@ -9,9 +10,10 @@ const reorderSchema = z.object({
 
 export const PUT = withErrorHandling(async (req) => {
   const { stages } = reorderSchema.parse(await req.json());
+  await connectDB();
 
-  await Promise.all(stages.map(({ id, order }) => prisma.stageTemplate.update({ where: { id }, data: { order } })));
+  await Promise.all(stages.map(({ id, order }) => StageTemplate.findByIdAndUpdate(id, { order })));
 
-  const updated = await prisma.stageTemplate.findMany({ orderBy: { order: 'asc' } });
-  return ok(updated.map(toStageDTO));
+  const updated = await StageTemplate.find().sort({ order: 1 });
+  return ok(updated.map((s) => toStageDTO(s.toObject())));
 });

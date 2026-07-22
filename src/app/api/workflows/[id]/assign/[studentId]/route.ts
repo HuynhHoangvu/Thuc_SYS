@@ -1,4 +1,6 @@
-import { prisma } from '@/lib/prisma';
+import { connectDB } from '@/lib/mongoose';
+import { WorkflowTemplate } from '@/models/WorkflowTemplate';
+import { WorkflowProgress } from '@/models/WorkflowProgress';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 import { NotFoundError } from '@/lib/errors';
 import { WorkflowStep, toProgressDTO } from '@/lib/workflow/dto';
@@ -6,21 +8,16 @@ import { WorkflowStep, toProgressDTO } from '@/lib/workflow/dto';
 export const POST = withErrorHandling(
   async (_req, { params }: { params: Promise<{ id: string; studentId: string }> }) => {
     const { id, studentId } = await params;
+    await connectDB();
 
-    const template = await prisma.workflowTemplate.findUnique({ where: { id } });
+    const template = await WorkflowTemplate.findById(id);
     if (!template) throw new NotFoundError('Workflow template not found');
 
-    const existing = await prisma.workflowProgress.findUnique({
-      where: { studentId_templateId: { studentId, templateId: id } },
-      include: { template: true },
-    });
-    if (existing) return ok(toProgressDTO(existing), 201);
+    const existing = await WorkflowProgress.findOne({ studentId, templateId: id });
+    if (existing) return ok(toProgressDTO(existing.toObject(), template.toObject()), 201);
 
-    const steps = (template.steps as WorkflowStep[]).map((s) => ({ key: s.key, completed: false }));
-    const progress = await prisma.workflowProgress.create({
-      data: { studentId, templateId: id, steps },
-      include: { template: true },
-    });
-    return ok(toProgressDTO(progress), 201);
+    const steps = (template.steps as unknown as WorkflowStep[]).map((s) => ({ key: s.key, completed: false }));
+    const progress = await WorkflowProgress.create({ studentId, templateId: id, steps });
+    return ok(toProgressDTO(progress.toObject(), template.toObject()), 201);
   }
 );

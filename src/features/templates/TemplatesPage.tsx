@@ -38,7 +38,8 @@ export function TemplatesPage() {
       <h1 className="mb-6 text-2xl font-semibold text-foreground">Mẫu quy trình</h1>
 
       <div className="flex flex-col gap-6">
-        <StagesSection />
+        <StagesSection type="student" title="Giai đoạn học sinh" />
+        <StagesSection type="travel" title="Giai đoạn du lịch / visa" />
 
         <div className="rounded-lg border border-border bg-card p-5">
           <SectionHeader title="Mẫu quy trình (Workflow)" onAdd={() => setIsWorkflowOpen(true)} />

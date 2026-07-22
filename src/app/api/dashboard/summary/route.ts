@@ -1,34 +1,30 @@
-import { prisma } from '@/lib/prisma';
+import { connectDB } from '@/lib/mongoose';
+import { Student } from '@/models/Student';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 
 const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
 
 export const GET = withErrorHandling(async () => {
+  await connectDB();
+
   const [totalStudents, byStageRaw, byCountryRaw, recentStudents] = await Promise.all([
-    prisma.student.count(),
-    prisma.student.groupBy({ by: ['stage'], _count: { _all: true } }),
-    prisma.student.groupBy({
-      by: ['destinationCountry'],
-      _count: { _all: true },
-      where: { destinationCountry: { not: null } },
-    }),
-    prisma.student.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, fullName: true, stage: true, destinationCountry: true, createdAt: true },
-    }),
+    Student.countDocuments(),
+    Student.aggregate([{ $group: { _id: '$stage', count: { $sum: 1 } } }]),
+    Student.aggregate([
+      { $match: { destinationCountry: { $ne: null } } },
+      { $group: { _id: '$destinationCountry', count: { $sum: 1 } } },
+    ]),
+    Student.find({}, { fullName: 1, stage: 1, destinationCountry: 1, createdAt: 1 }).sort({ createdAt: -1 }).limit(5),
   ]);
 
   return ok({
     totalStudents,
-    byStage: Object.fromEntries(byStageRaw.map((row) => [row.stage, row._count._all])),
+    byStage: Object.fromEntries(byStageRaw.map((row) => [row._id, row.count])),
     byCountry: Object.fromEntries(
-      byCountryRaw
-        .filter((row) => row.destinationCountry)
-        .map((row) => [countryDbToDto[row.destinationCountry as string], row._count._all])
+      byCountryRaw.filter((row) => row._id).map((row) => [countryDbToDto[row._id as string], row.count])
     ),
     recentStudents: recentStudents.map((s) => ({
-      _id: s.id,
+      _id: String(s._id),
       personal: { fullName: s.fullName },
       stage: s.stage,
       studyAbroad: { destinationCountry: s.destinationCountry ? countryDbToDto[s.destinationCountry] : undefined },

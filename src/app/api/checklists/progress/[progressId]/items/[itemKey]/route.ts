@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { connectDB } from '@/lib/mongoose';
+import { ChecklistProgress } from '@/models/ChecklistProgress';
+import { ChecklistTemplate } from '@/models/ChecklistTemplate';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 import { NotFoundError } from '@/lib/errors';
 import { toProgressDTO } from '@/lib/checklists/dto';
-import type { Prisma } from '@/generated/prisma/client';
 
 const bodySchema = z.object({ completed: z.boolean() });
 
@@ -17,8 +18,9 @@ export const PATCH = withErrorHandling(
   async (req, { params }: { params: Promise<{ progressId: string; itemKey: string }> }) => {
     const { progressId, itemKey } = await params;
     const { completed } = bodySchema.parse(await req.json());
+    await connectDB();
 
-    const progress = await prisma.checklistProgress.findUnique({ where: { id: progressId } });
+    const progress = await ChecklistProgress.findById(progressId);
     if (!progress) throw new NotFoundError('Checklist progress not found');
 
     const items = progress.items as unknown as ItemProgress[];
@@ -28,11 +30,13 @@ export const PATCH = withErrorHandling(
     item.completed = completed;
     item.completedAt = completed ? new Date().toISOString() : undefined;
 
-    const updated = await prisma.checklistProgress.update({
-      where: { id: progressId },
-      data: { items: items as unknown as Prisma.InputJsonValue },
-      include: { template: true },
-    });
-    return ok(toProgressDTO(updated));
+    progress.items = items as never;
+    progress.markModified('items');
+    await progress.save();
+
+    const template = await ChecklistTemplate.findById(progress.templateId);
+    if (!template) throw new NotFoundError('Checklist template not found');
+
+    return ok(toProgressDTO(progress.toObject(), template.toObject()));
   }
 );

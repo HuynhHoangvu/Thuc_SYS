@@ -20,7 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { stageApi } from './stage.api';
 import { slugify } from '@/lib/utils';
-import type { Stage } from './stage.types';
+import type { Stage, StageTemplateType } from './stage.types';
 
 function SortableStageRow({
   stage,
@@ -84,9 +84,14 @@ function SortableStageRow({
   );
 }
 
-export function StagesSection() {
+interface StagesSectionProps {
+  type?: StageTemplateType;
+  title?: string;
+}
+
+export function StagesSection({ type = 'student', title = 'Giai đoạn học sinh' }: StagesSectionProps) {
   const queryClient = useQueryClient();
-  const { data: stages, isLoading } = useQuery({ queryKey: ['stages'], queryFn: stageApi.list });
+  const { data: stages, isLoading } = useQuery({ queryKey: ['stages', type], queryFn: () => stageApi.list(type) });
 
   const [newTitle, setNewTitle] = useState('');
   const [newColor, setNewColor] = useState('#a78bfa');
@@ -100,11 +105,11 @@ export function StagesSection() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   function invalidate() {
-    queryClient.invalidateQueries({ queryKey: ['stages'] });
+    queryClient.invalidateQueries({ queryKey: ['stages', type] });
   }
 
   const createMutation = useMutation({
-    mutationFn: () => stageApi.create({ key: slugify(newTitle), title: newTitle, color: newColor }),
+    mutationFn: () => stageApi.create({ key: slugify(newTitle), title: newTitle, color: newColor, type }),
     onSuccess: () => {
       invalidate();
       setNewTitle('');
@@ -147,7 +152,7 @@ export function StagesSection() {
   return (
     <div className="rounded-lg border border-border bg-card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-card-foreground">Giai đoạn học sinh</h2>
+        <h2 className="text-sm font-semibold text-card-foreground">{title}</h2>
       </div>
 
       {isLoading && <p className="py-2 text-sm text-muted-foreground">Đang tải…</p>}

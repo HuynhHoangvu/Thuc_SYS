@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Prisma } from '@/generated/prisma/client';
+import type { StudentDoc } from '@/models/Student';
+import type { TodoDoc } from '@/models/Todo';
 
 const personalSchema = z.object({
   fullName: z.string().min(2),
@@ -70,7 +71,7 @@ export type UpdateStudentInput = z.infer<typeof updateStudentSchema>;
 const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
 const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
 
-export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInput {
+export function toCreateData(input: CreateStudentInput) {
   return {
     fullName: input.personal.fullName,
     dateOfBirth: input.personal.dateOfBirth,
@@ -90,7 +91,7 @@ export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInp
     englishScore: input.academic?.englishScore,
     englishTestDate: input.academic?.englishTestDate,
     destinationCountry: input.studyAbroad?.destinationCountry
-      ? (countryDtoToDb[input.studyAbroad.destinationCountry] as never)
+      ? countryDtoToDb[input.studyAbroad.destinationCountry]
       : undefined,
     intakeTerm: input.studyAbroad?.intakeTerm,
     intakeYear: input.studyAbroad?.intakeYear,
@@ -109,8 +110,8 @@ export function toCreateData(input: CreateStudentInput): Prisma.StudentCreateInp
   };
 }
 
-export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInput {
-  const data: Prisma.StudentUpdateInput = {};
+export function toUpdateData(input: UpdateStudentInput) {
+  const data: Record<string, unknown> = {};
   const p = input.personal;
   if (p) {
     if (p.fullName !== undefined) data.fullName = p.fullName;
@@ -136,7 +137,7 @@ export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInp
   }
   const s = input.studyAbroad;
   if (s) {
-    if (s.destinationCountry !== undefined) data.destinationCountry = countryDtoToDb[s.destinationCountry] as never;
+    if (s.destinationCountry !== undefined) data.destinationCountry = countryDtoToDb[s.destinationCountry];
     if (s.intakeTerm !== undefined) data.intakeTerm = s.intakeTerm;
     if (s.intakeYear !== undefined) data.intakeYear = s.intakeYear;
     if (s.preferredUniversities !== undefined) data.preferredUniversities = s.preferredUniversities;
@@ -155,55 +156,56 @@ export function toUpdateData(input: UpdateStudentInput): Prisma.StudentUpdateInp
   return data;
 }
 
-type StudentWithTodos = Prisma.StudentGetPayload<{ include: { todos: true } }>;
+type StudentLike = StudentDoc & { _id: unknown };
 
-export function toStudentDTO(student: StudentWithTodos) {
+export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
+  const s = student;
   return {
-    id: student.id,
+    id: String(s._id),
     personal: {
-      fullName: student.fullName,
-      dateOfBirth: student.dateOfBirth,
-      gender: student.gender,
-      nationality: student.nationality,
-      passportNumber: student.passportNumber,
-      passportExpiry: student.passportExpiry,
-      email: student.email,
-      emailPassword: student.emailPassword,
-      phone: student.phone,
-      address: student.address,
+      fullName: s.fullName,
+      dateOfBirth: s.dateOfBirth,
+      gender: s.gender,
+      nationality: s.nationality,
+      passportNumber: s.passportNumber,
+      passportExpiry: s.passportExpiry,
+      email: s.email,
+      emailPassword: s.emailPassword,
+      phone: s.phone,
+      address: s.address,
     },
     academic: {
-      highestEducation: student.highestEducation,
-      schoolName: student.schoolName,
-      gpa: student.gpa,
-      graduationYear: student.graduationYear,
-      englishTest: student.englishTest,
-      englishScore: student.englishScore,
-      englishTestDate: student.englishTestDate,
+      highestEducation: s.highestEducation,
+      schoolName: s.schoolName,
+      gpa: s.gpa,
+      graduationYear: s.graduationYear,
+      englishTest: s.englishTest,
+      englishScore: s.englishScore,
+      englishTestDate: s.englishTestDate,
     },
     studyAbroad: {
-      destinationCountry: student.destinationCountry ? countryDbToDto[student.destinationCountry] : undefined,
-      intakeTerm: student.intakeTerm,
-      intakeYear: student.intakeYear,
-      preferredUniversities: student.preferredUniversities,
-      preferredMajor: student.preferredMajor,
-      visaType: student.visaType,
-      visaIssuedDate: student.visaIssuedDate,
-      visaExpiry: student.visaExpiry,
-      sevisId: student.sevisId,
-      i20Number: student.i20Number,
-      studyPermitNumber: student.studyPermitNumber,
-      dliNumber: student.dliNumber,
-      nzQualificationCode: student.nzQualificationCode,
+      destinationCountry: s.destinationCountry ? countryDbToDto[s.destinationCountry] : undefined,
+      intakeTerm: s.intakeTerm,
+      intakeYear: s.intakeYear,
+      preferredUniversities: s.preferredUniversities,
+      preferredMajor: s.preferredMajor,
+      visaType: s.visaType,
+      visaIssuedDate: s.visaIssuedDate,
+      visaExpiry: s.visaExpiry,
+      sevisId: s.sevisId,
+      i20Number: s.i20Number,
+      studyPermitNumber: s.studyPermitNumber,
+      dliNumber: s.dliNumber,
+      nzQualificationCode: s.nzQualificationCode,
     },
-    stage: student.stage,
-    stageOrder: student.stageOrder,
-    notes: student.notes,
-    todos: student.todos
+    stage: s.stage,
+    stageOrder: s.stageOrder,
+    notes: s.notes,
+    todos: (todos ?? [])
       .slice()
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map((t) => ({ id: t.id, text: t.text, done: t.done, createdAt: t.createdAt })),
-    createdAt: student.createdAt,
-    updatedAt: student.updatedAt,
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((t) => ({ id: String((t as TodoDoc & { _id: unknown })._id), text: t.text, done: t.done, createdAt: t.createdAt })),
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
   };
 }

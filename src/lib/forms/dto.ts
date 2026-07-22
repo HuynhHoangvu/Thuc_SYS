@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Prisma } from '@/generated/prisma/client';
+import type { FormTemplateDoc } from '@/models/FormTemplate';
+import type { FormSubmissionDoc } from '@/models/FormSubmission';
 
 const fieldSchema = z.object({
   key: z.string().min(1),
@@ -31,14 +32,16 @@ const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', N
 const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
 
 export function countryToDb(country?: string) {
-  return country ? (countryDtoToDb[country] as never) : undefined;
+  return country ? countryDtoToDb[country] : undefined;
 }
 
-type Template = Prisma.FormTemplateGetPayload<Record<string, never>>;
+type Template = Pick<FormTemplateDoc, 'name' | 'country' | 'description' | 'fields' | 'isActive'> & {
+  _id: unknown;
+};
 
 export function toTemplateDTO(template: Template) {
   return {
-    id: template.id,
+    id: String(template._id),
     name: template.name,
     country: template.country ? countryDbToDto[template.country] : undefined,
     description: template.description ?? undefined,
@@ -47,12 +50,12 @@ export function toTemplateDTO(template: Template) {
   };
 }
 
-type SubmissionWithTemplate = Prisma.FormSubmissionGetPayload<{ include: { template: true } }>;
+type Submission = Pick<FormSubmissionDoc, 'studentId' | 'values'> & { _id: unknown };
 
-export function toSubmissionDTO(submission: SubmissionWithTemplate) {
+export function toSubmissionDTO(submission: Submission, template: Template) {
   return {
-    id: submission.id,
-    template: toTemplateDTO(submission.template),
+    id: String(submission._id),
+    template: toTemplateDTO(template),
     student: submission.studentId,
     values: submission.values,
   };

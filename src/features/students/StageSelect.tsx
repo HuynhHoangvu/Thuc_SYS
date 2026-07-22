@@ -12,7 +12,7 @@ interface StageSelectProps {
 export function StageSelect({ studentId, stage }: StageSelectProps) {
   const queryClient = useQueryClient();
 
-  const { data: stages } = useQuery({ queryKey: ['stages'], queryFn: stageApi.list });
+  const { data: stages } = useQuery({ queryKey: ['stages', 'student'], queryFn: () => stageApi.list('student') });
 
   const moveMutation = useMutation({
     mutationFn: (newStage: string) => studentApi.update(studentId, { stage: newStage }),
