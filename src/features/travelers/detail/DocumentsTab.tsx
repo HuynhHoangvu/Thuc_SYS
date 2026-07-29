@@ -45,18 +45,18 @@ export function DocumentsTab({ travelerId }: DocumentsTabProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           placeholder="Loại tài liệu (VD: hộ chiếu)"
-          className="w-48 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-48"
         />
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploadMutation.isPending}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:brightness-90 hover:shadow-md active:brightness-75 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:brightness-90 hover:shadow-md active:brightness-75 disabled:opacity-50"
         >
           <Upload size={16} />
           {uploadMutation.isPending ? 'Đang tải lên…' : 'Tải lên tài liệu'}
@@ -68,14 +68,14 @@ export function DocumentsTab({ travelerId }: DocumentsTabProps) {
 
       <div className="flex flex-col divide-y divide-border rounded-lg border border-border">
         {documents?.map((doc) => (
-          <div key={doc.id} className="flex items-center justify-between px-4 py-3 text-sm">
-            <div>
-              <div className="font-medium text-card-foreground">{doc.originalName}</div>
+          <div key={doc.id} className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="truncate font-medium text-card-foreground">{doc.originalName}</div>
               <div className="text-xs text-muted-foreground">
                 {doc.category} · v{doc.version} · {formatSize(doc.size)}
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center gap-3">
               <a
                 href={travelerApi.documentDownloadUrl(travelerId, doc.id)}
                 target="_blank"
