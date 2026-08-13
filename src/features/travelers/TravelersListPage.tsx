@@ -7,6 +7,7 @@ import { travelerApi } from './traveler.api';
 import { CreateTravelerModal } from './CreateTravelerModal';
 import { TravelerDetailModal, type TravelerDetailTabKey } from './detail/TravelerDetailModal';
 import { StageSelect } from './StageSelect';
+import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
 
 const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
@@ -46,6 +47,8 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
 export function TravelersListPage() {
   const [search, setSearch] = useState('');
   const [destinationCountry, setDestinationCountry] = useState('');
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa'>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTravelerId, setSelectedTravelerId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<TravelerDetailTabKey | undefined>(undefined);
@@ -61,6 +64,11 @@ export function TravelersListPage() {
       }),
   });
 
+  const { data: stagesData } = useQuery({
+    queryKey: ['stages', 'traveler'],
+    queryFn: () => stageApi.list('traveler'),
+  });
+
   function openTraveler(travelerId: string, tab?: TravelerDetailTabKey) {
     setDetailInitialTab(tab);
     setSelectedTravelerId(travelerId);
@@ -73,18 +81,52 @@ export function TravelersListPage() {
       .sort((a, b) => (a.days as number) - (b.days as number));
   }, [data]);
 
+  const sortedTravelers = useMemo(() => {
+    const stageOrder = new Map((stagesData ?? []).map((stage, index) => [stage.key, index]));
+
+    return [...(data?.data ?? [])].sort((a, b) => {
+      const aOrder = stageOrder.get(a.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = stageOrder.get(b.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
+
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.personal.fullName.localeCompare(b.personal.fullName, 'vi');
+    });
+  }, [data, stagesData]);
+
+  const stageTitleMap = useMemo(() => {
+    return new Map((stagesData ?? []).map((stage) => [stage.key, stage.title]));
+  }, [stagesData]);
+
+  const visibleTravelers = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return sortedTravelers.filter((traveler) => {
+      const matchesStage = !selectedStage || traveler.stage === selectedStage;
+      const matchesQuickFilter =
+        selectedQuickFilter === 'all' ||
+        (selectedQuickFilter === 'visa' && daysUntil(traveler.travel?.visaExpiry) !== null && daysUntil(traveler.travel?.visaExpiry)! <= VISA_WARNING_DAYS);
+
+      const matchesSearch =
+        !normalizedSearch ||
+        traveler.personal.fullName.toLowerCase().includes(normalizedSearch) ||
+        (traveler.stage && (traveler.stage.toLowerCase().includes(normalizedSearch) || stageTitleMap.get(traveler.stage)?.toLowerCase().includes(normalizedSearch)));
+
+      return matchesStage && matchesQuickFilter && matchesSearch;
+    });
+  }, [search, selectedQuickFilter, selectedStage, sortedTravelers, stageTitleMap]);
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-foreground">Du lịch / Visa phụ huynh</h1>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-56">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên…"
-              className="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-56"
+              placeholder="Tìm theo tên / giai đoạn…"
+              className="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <select
@@ -99,7 +141,7 @@ export function TravelersListPage() {
           </select>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:brightness-90 hover:shadow-md active:brightness-75"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:brightness-90 hover:shadow-md active:brightness-75 sm:w-auto"
           >
             <Plus size={16} />
             Thêm hồ sơ
@@ -134,7 +176,55 @@ export function TravelersListPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('all');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            !selectedStage && selectedQuickFilter === 'all'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >visibleTravelersid}
+            onClick={() => {
+              setSelectedStage(stage.key);
+              setSelectedQuickFilter('all');
+            }}
+            className={cn(
+              'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+              selectedStage === stage.key
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {stage.title}
+          </button>
+        ))}
+      </div>
+
+      {isLoading && (
+        <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+          Đang tải danh sách…
+        </div>
+      )}
+
+      {isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-8 text-center text-red-500">
+          Không thể tải danh sách.
+        </div>
+      )}
+
+      {!isLoading && !isError && data?.data.length === 0 && (
+        <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+          Chưa có hồ sơ nào.
+        </div>
+      )}
+
+      {!isLoading && !isError && visibleTravelers.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <table className="w-full min-w-205 text-left text-sm">
           <thead className="border-b border-border bg-muted/50 text-muted-foreground">
             <tr>
