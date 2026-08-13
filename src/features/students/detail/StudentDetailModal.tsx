@@ -66,7 +66,7 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
     <Dialog.Root open={Boolean(studentId)} onOpenChange={(next) => !next && onOpenChange(false)}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 flex h-dvh w-screen -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border border-border bg-card shadow-lg sm:h-[85vh] sm:w-[92vw] sm:max-w-3xl sm:rounded-lg">
+        <Dialog.Content className="fixed left-1/2 top-1/2 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Title className="truncate text-base font-semibold text-card-foreground sm:text-lg">
               {student?.personal.fullName ?? 'Học sinh'}
