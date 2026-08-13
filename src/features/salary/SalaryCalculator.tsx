@@ -23,6 +23,8 @@ export function SalaryCalculator() {
   const [personName, setPersonName] = useState('');
   const [customLabel, setCustomLabel] = useState('');
   const [customAmount, setCustomAmount] = useState('');
+  const [deductionLabel, setDeductionLabel] = useState('');
+  const [deductionAmount, setDeductionAmount] = useState('');
 
   const configQuery = useQuery({ queryKey: ['salary', 'config'], queryFn: salaryApi.getConfig });
   const entriesQuery = useQuery({
@@ -63,6 +65,13 @@ export function SalaryCalculator() {
     addEntryMutation.mutate({ label: customLabel.trim(), amount: Number(customAmount) || 0, personName });
     setCustomLabel('');
     setCustomAmount('');
+  }
+
+  function addDeduction() {
+    if (!deductionLabel.trim() || !deductionAmount) return;
+    addEntryMutation.mutate({ label: deductionLabel.trim(), amount: -(Number(deductionAmount) || 0), personName });
+    setDeductionLabel('');
+    setDeductionAmount('');
   }
 
   if (configQuery.isLoading || !config) {
@@ -151,6 +160,31 @@ export function SalaryCalculator() {
             Cộng
           </button>
         </div>
+
+        <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
+          <h3 className="text-sm font-medium text-card-foreground">Khoản trừ (Phạt, tạm ứng, v.v)</h3>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              value={deductionLabel}
+              onChange={(e) => setDeductionLabel(e.target.value)}
+              placeholder="Khoản trừ (VD: Phạt trễ, Tạm ứng)"
+              className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <input
+              type="number"
+              value={deductionAmount}
+              onChange={(e) => setDeductionAmount(e.target.value)}
+              placeholder="Số tiền"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-36"
+            />
+            <button
+              onClick={addDeduction}
+              className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+            >
+              Trừ
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6">
@@ -167,7 +201,9 @@ export function SalaryCalculator() {
                 {entry.personName && <span className="text-foreground"> — {entry.personName}</span>}
               </span>
               <div className="flex items-center gap-3">
-                <span className="font-medium text-foreground">+ {formatVnd(entry.amount)}</span>
+                <span className={`font-medium ${entry.amount >= 0 ? 'text-foreground' : 'text-red-600'}`}>
+                  {entry.amount >= 0 ? '+ ' : '− '}{formatVnd(Math.abs(entry.amount))}
+                </span>
                 <button
                   onClick={() => removeEntryMutation.mutate(entry._id)}
                   className="text-muted-foreground hover:text-red-500"
