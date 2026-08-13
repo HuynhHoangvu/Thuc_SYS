@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 -translate-x-full flex-col border-r border-border bg-card p-4 transition-transform',
-          'md:sticky md:top-0 md:h-svh md:translate-x-0',
+          'lg:sticky lg:top-0 lg:h-svh lg:translate-x-0',
           isMobileNavOpen && 'translate-x-0'
         )}
       >
@@ -30,7 +30,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <span className="text-lg font-semibold text-card-foreground">CRM Du học</span>
           <button
             onClick={() => setIsMobileNavOpen(false)}
-            className="text-muted-foreground hover:text-foreground md:hidden"
+            className="text-muted-foreground hover:text-foreground lg:hidden"
           >
             <X size={20} />
           </button>
@@ -61,12 +61,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {isMobileNavOpen && (
         <div
           onClick={() => setIsMobileNavOpen(false)}
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
         />
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 md:hidden">
+        <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 lg:hidden">
           <button
             onClick={() => setIsMobileNavOpen(true)}
             className="text-muted-foreground hover:text-foreground"

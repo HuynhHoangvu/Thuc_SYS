@@ -7,9 +7,10 @@ import { stageApi } from '@/features/stages/stage.api';
 interface StageSelectProps {
   studentId: string;
   stage: string;
+  className?: string;
 }
 
-export function StageSelect({ studentId, stage }: StageSelectProps) {
+export function StageSelect({ studentId, stage, className }: StageSelectProps) {
   const queryClient = useQueryClient();
 
   const { data: stages } = useQuery({ queryKey: ['stages', 'student'], queryFn: () => stageApi.list('student') });
@@ -29,7 +30,12 @@ export function StageSelect({ studentId, stage }: StageSelectProps) {
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => moveMutation.mutate(e.target.value)}
       disabled={moveMutation.isPending}
-      className="rounded-full border-0 bg-secondary px-2 py-1 text-xs font-medium capitalize text-secondary-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+      className={[
+        'rounded-full border-0 bg-secondary px-2 py-1 text-xs font-medium capitalize text-secondary-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-50',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       {!sortedStages.some((s) => s.key === stage) && (
         <option value={stage} className="capitalize">
