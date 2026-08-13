@@ -32,11 +32,11 @@ interface StudentDetailModalProps {
 
 export function StudentDetailModal({ studentId, initialTab, onOpenChange }: StudentDetailModalProps) {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<StudentDetailTabKey>(initialTab ?? 'workflow');
+  const [activeTab, setActiveTab] = useState<StudentDetailTabKey>(initialTab ?? 'profile');
 
   useEffect(() => {
     if (studentId) {
-      setActiveTab(initialTab ?? 'workflow');
+      setActiveTab(initialTab ?? 'profile');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId, initialTab]);
