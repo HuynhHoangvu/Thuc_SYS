@@ -7,6 +7,7 @@ import { studentApi } from './student.api';
 import { CreateStudentModal } from './CreateStudentModal';
 import { StudentDetailModal, type StudentDetailTabKey } from './detail/StudentDetailModal';
 import { StageSelect } from './StageSelect';
+import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
 
 const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
@@ -45,6 +46,8 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
 
 export function StudentsListPage() {
   const [search, setSearch] = useState('');
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo'>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<StudentDetailTabKey | undefined>(undefined);
@@ -52,6 +55,11 @@ export function StudentsListPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['students', { search }],
     queryFn: () => studentApi.list({ search: search || undefined, page: 1, limit: 20 }),
+  });
+
+  const { data: stagesData } = useQuery({
+    queryKey: ['stages', 'student'],
+    queryFn: () => stageApi.list('student'),
   });
 
   function openStudent(studentId: string, tab?: StudentDetailTabKey) {
@@ -66,6 +74,41 @@ export function StudentsListPage() {
       .sort((a, b) => (a.days as number) - (b.days as number));
   }, [data]);
 
+  const sortedStudents = useMemo(() => {
+    const stageOrder = new Map((stagesData ?? []).map((stage, index) => [stage.key, index]));
+
+    return [...(data?.data ?? [])].sort((a, b) => {
+      const aOrder = stageOrder.get(a.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = stageOrder.get(b.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
+
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.personal.fullName.localeCompare(b.personal.fullName, 'vi');
+    });
+  }, [data, stagesData]);
+
+  const stageTitleMap = useMemo(() => {
+    return new Map((stagesData ?? []).map((stage) => [stage.key, stage.title]));
+  }, [stagesData]);
+
+  const visibleStudents = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return sortedStudents.filter((student) => {
+      const matchesStage = !selectedStage || student.stage === selectedStage;
+      const matchesQuickFilter =
+        selectedQuickFilter === 'all' ||
+        (selectedQuickFilter === 'visa' && daysUntil(student.studyAbroad?.visaExpiry) !== null && daysUntil(student.studyAbroad?.visaExpiry)! <= VISA_WARNING_DAYS) ||
+        (selectedQuickFilter === 'todo' && (student.todos ?? []).some((todo: { done: boolean }) => !todo.done));
+
+      const matchesSearch =
+        !normalizedSearch ||
+        student.personal.fullName.toLowerCase().includes(normalizedSearch) ||
+        (student.stage && (student.stage.toLowerCase().includes(normalizedSearch) || stageTitleMap.get(student.stage)?.toLowerCase().includes(normalizedSearch)));
+
+      return matchesStage && matchesQuickFilter && matchesSearch;
+    });
+  }, [search, selectedQuickFilter, selectedStage, sortedStudents, stageTitleMap]);
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -76,7 +119,7 @@ export function StudentsListPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm học sinh…"
+              placeholder="Tìm theo tên / giai đoạn…"
               className="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-64"
             />
           </div>
@@ -117,82 +160,147 @@ export function StudentsListPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full min-w-205 text-left text-sm">
-          <thead className="border-b border-border bg-muted/50 text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 font-medium">Họ tên</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Điểm đến</th>
-              <th className="px-4 py-3 font-medium">Thời hạn visa</th>
-              <th className="px-4 py-3 font-medium">Giai đoạn</th>
-              <th className="px-4 py-3 font-medium">Việc cần làm</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  Đang tải danh sách học sinh…
-                </td>
-              </tr>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('all');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            !selectedStage && selectedQuickFilter === 'all'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Tất cả
+        </button>
+
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('visa');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            selectedQuickFilter === 'visa' && !selectedStage
+              ? 'border-amber-500 bg-amber-500 text-white'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Visa gần hết hạn
+        </button>
+
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('todo');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            selectedQuickFilter === 'todo' && !selectedStage
+              ? 'border-red-500 bg-red-500 text-white'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Cần làm
+        </button>
+
+        {(stagesData ?? []).map((stage) => (
+          <button
+            key={stage.id}
+            onClick={() => {
+              setSelectedStage(stage.key);
+              setSelectedQuickFilter('all');
+            }}
+            className={cn(
+              'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+              selectedStage === stage.key
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background text-muted-foreground hover:text-foreground'
             )}
-            {isError && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-red-500">
-                  Không thể tải danh sách học sinh.
-                </td>
-              </tr>
-            )}
-            {!isLoading && !isError && data?.data.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  Chưa có học sinh nào.
-                </td>
-              </tr>
-            )}
-            {data?.data.map((student) => {
-              const hasOpenTodos = (student.todos ?? []).some((t) => !t.done);
-              return (
-                <tr
-                  key={student.id}
-                  onClick={() => openStudent(student.id)}
-                  className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/40"
-                >
-                  <td className="px-4 py-3 font-medium text-card-foreground">{student.personal.fullName}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{student.personal.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {student.studyAbroad?.destinationCountry
-                      ? countryLabels[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry
-                      : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <VisaCountdown visaExpiry={student.studyAbroad?.visaExpiry} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <StageSelect studentId={student.id} stage={student.stage} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openStudent(student.id, 'notes');
-                      }}
-                      title="Xem việc cần làm"
-                      className={cn(
-                        'inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 hover:bg-muted',
-                        hasOpenTodos ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      <ListChecks size={16} />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+          >
+            {stage.title}
+          </button>
+        ))}
       </div>
+
+      {isLoading && (
+        <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+          Đang tải danh sách học sinh…
+        </div>
+      )}
+
+      {isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-8 text-center text-red-500">
+          Không thể tải danh sách học sinh.
+        </div>
+      )}
+
+      {!isLoading && !isError && data?.data.length === 0 && (
+        <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+          Chưa có học sinh nào.
+        </div>
+      )}
+
+      {!isLoading && !isError && visibleStudents.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <table className="w-full min-w-180 text-left text-sm">
+            <thead className="border-b border-border bg-muted/50 text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-medium">Họ tên</th>
+                <th className="px-4 py-3 font-medium">Email</th>
+                <th className="px-4 py-3 font-medium">Điểm đến</th>
+                <th className="px-4 py-3 font-medium">Thời hạn visa</th>
+                <th className="px-4 py-3 font-medium">Giai đoạn</th>
+                <th className="px-4 py-3 font-medium">Việc cần làm</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleStudents.map((student) => {
+                const hasOpenTodos = (student.todos ?? []).some((t: { done: boolean }) => !t.done);
+
+                return (
+                  <tr
+                    key={student.id}
+                    onClick={() => openStudent(student.id)}
+                    className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/40"
+                  >
+                    <td className="px-4 py-3 font-medium text-card-foreground">{student.personal.fullName}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{student.personal.email}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {student.studyAbroad?.destinationCountry
+                        ? countryLabels[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <VisaCountdown visaExpiry={student.studyAbroad?.visaExpiry} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StageSelect studentId={student.id} stage={student.stage} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openStudent(student.id, 'notes');
+                        }}
+                        title="Xem việc cần làm"
+                        className={cn(
+                          'inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 hover:bg-muted',
+                          hasOpenTodos ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        <ListChecks size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
