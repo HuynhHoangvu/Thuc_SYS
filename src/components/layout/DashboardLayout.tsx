@@ -27,27 +27,25 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           isMobileNavOpen && 'translate-x-0'
         )}
       >
-        <div className="mb-6 flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/logo.jpg"
-              alt="Gián Catholic Global"
-              width={40}
-              height={40}
-              className="neu-raised-sm h-10 w-10 rounded-full object-cover"
-            />
-            <span className="text-sm font-semibold leading-tight text-(--sidebar-foreground)">
-              Gián Catholic
-              <br />
-              Global
-            </span>
-          </div>
+        <div className="relative mb-6 flex flex-col items-center gap-2 px-1 pt-1">
           <button
             onClick={() => setIsMobileNavOpen(false)}
-            className="neu-raised-sm flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-(--sidebar-muted) hover:text-(--sidebar-foreground) active:shadow-none lg:hidden"
+            className="neu-raised-sm absolute right-0 top-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-(--sidebar-muted) hover:text-(--sidebar-foreground) active:shadow-none lg:hidden"
           >
             <X size={18} />
           </button>
+          <Image
+            src="/logo.jpg"
+            alt="Gián Catholic Global"
+            width={80}
+            height={80}
+            className="neu-raised-sm h-20 w-20 rounded-full object-cover"
+          />
+          <span className="text-center text-sm font-semibold leading-tight text-(--sidebar-foreground)">
+            Gián Catholic
+            <br />
+            Global
+          </span>
         </div>
         <nav className="flex flex-1 flex-col gap-2">
           {navItems.map(({ to, label, icon: Icon }) => {
@@ -96,7 +94,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           >
             <Menu size={20} />
           </button>
-          <Image src="/logo.jpg" alt="Gián Catholic Global" width={28} height={28} className="rounded-full object-cover" />
+          <Image src="/logo.jpg" alt="Gián Catholic Global" width={36} height={36} className="rounded-full object-cover" />
           <span className="text-base font-semibold text-card-foreground">Gián Catholic Global</span>
         </div>
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-4">{children}</main>
