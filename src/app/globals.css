@@ -153,11 +153,12 @@ body {
   box-shadow: var(--neu-pressed-sm);
 }
 
-/* Form fields sink into the page instead of floating above it. */
+/* Form fields sink into the page instead of floating above it. Stage-select
+   pills (bg-secondary) are left alone — they're solid colored badges, not
+   blank inputs, and losing that fill color washes out their white text. */
 input.border,
 textarea.border,
-select.border,
-select.bg-secondary {
+select.border {
   border-color: transparent !important;
   background-color: var(--background) !important;
   box-shadow: var(--neu-pressed-sm) !important;
@@ -165,8 +166,7 @@ select.bg-secondary {
 
 input.border:focus,
 textarea.border:focus,
-select.border:focus,
-select.bg-secondary:focus {
+select.border:focus {
   box-shadow: var(--neu-pressed-sm), 0 0 0 2px var(--ring) !important;
 }
 
