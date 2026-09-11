@@ -66,7 +66,7 @@ export function TravelersListPage() {
 
   const { data: stagesData } = useQuery({
     queryKey: ['stages', 'traveler'],
-    queryFn: () => stageApi.list('traveler'),
+    queryFn: () => stageApi.list('travel'),
   });
 
   function openTraveler(travelerId: string, tab?: TravelerDetailTabKey) {
@@ -188,7 +188,28 @@ export function TravelersListPage() {
               ? 'border-primary bg-primary text-primary-foreground'
               : 'border-border bg-background text-muted-foreground hover:text-foreground'
           )}
-        >visibleTravelersid}
+        >
+          Tất cả
+        </button>
+
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('visa');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            selectedQuickFilter === 'visa' && !selectedStage
+              ? 'border-amber-500 bg-amber-500 text-white'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Visa gần hết hạn
+        </button>
+
+        {(stagesData ?? []).map((stage) => (
+          <button
+            key={stage.id}
             onClick={() => {
               setSelectedStage(stage.key);
               setSelectedQuickFilter('all');
@@ -257,7 +278,7 @@ export function TravelersListPage() {
                 </td>
               </tr>
             )}
-            {data?.data.map((traveler) => (
+            {visibleTravelers.map((traveler) => (
               <tr
                 key={traveler.id}
                 onClick={() => openTraveler(traveler.id)}
@@ -280,7 +301,8 @@ export function TravelersListPage() {
             ))}
           </tbody>
         </table>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

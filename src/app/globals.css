@@ -3,38 +3,64 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fdf6fb;
-  --foreground: #2c2440;
-  --card: #ffffff;
-  --card-foreground: #2c2440;
-  --primary: #a78bfa;
-  --primary-foreground: #ffffff;
-  --secondary: #fbcfe8;
-  --secondary-foreground: #2c2440;
-  --muted: #f3e8ff;
-  --muted-foreground: #6b6380;
-  --accent: #bae6fd;
-  --accent-foreground: #2c2440;
-  --border: #ecd9f7;
-  --ring: #a78bfa;
-  --radius: 1rem;
+  /* "Gián Catholic Global" mascot palette — warm cream base, cacao-brown text
+     and sidebar, rosy-pink accent, sage-green secondary. */
+  --background: #f5efe6;
+  --foreground: #2c1810;
+  --card: #efece6;
+  --card-foreground: #2c1810;
+  --primary: #e88d88;
+  --primary-foreground: #2c1810;
+  --secondary: #8fa89b;
+  --secondary-foreground: #ffffff;
+  --muted: #efece6;
+  --muted-foreground: #5d4037;
+  --accent: #8fa89b;
+  --accent-foreground: #ffffff;
+  --border: #ded2be;
+  --ring: #e88d88;
+  --radius: 1.25rem;
+
+  --sidebar-bg: #5d4037;
+  --sidebar-foreground: #f5efe6;
+  --sidebar-muted: #d8c3b4;
+  --sidebar-active-bg: #e88d88;
+  --sidebar-active-foreground: #2c1810;
+  --sidebar-neu-light: #70544a;
+  --sidebar-neu-dark: #3d2a22;
+
+  /* Neumorphism light-source pair: surfaces are the same color as the page and
+     only read as raised/pressed via this dual shadow, never via borders. */
+  --neu-light: #ffffff;
+  --neu-dark: #d9cbb2;
 }
 
 .dark {
-  --background: #16121f;
-  --foreground: #ede9fe;
-  --card: #1e1930;
-  --card-foreground: #ede9fe;
-  --primary: #c4b5fd;
-  --primary-foreground: #16121f;
-  --secondary: #3b2a45;
-  --secondary-foreground: #ede9fe;
-  --muted: #241d35;
-  --muted-foreground: #a89fc0;
-  --accent: #2d3a4f;
-  --accent-foreground: #ede9fe;
-  --border: #2f2745;
-  --ring: #c4b5fd;
+  --background: #211712;
+  --foreground: #f5efe6;
+  --card: #2c1e17;
+  --card-foreground: #f5efe6;
+  --primary: #e88d88;
+  --primary-foreground: #2c1810;
+  --secondary: #8fa89b;
+  --secondary-foreground: #16211c;
+  --muted: #33251d;
+  --muted-foreground: #d8c3b4;
+  --accent: #8fa89b;
+  --accent-foreground: #16211c;
+  --border: #3c2c22;
+  --ring: #e88d88;
+
+  --sidebar-bg: #170f0b;
+  --sidebar-foreground: #f5efe6;
+  --sidebar-muted: #b39a89;
+  --sidebar-active-bg: #e88d88;
+  --sidebar-active-foreground: #2c1810;
+  --sidebar-neu-light: #241811;
+  --sidebar-neu-dark: #0a0605;
+
+  --neu-light: #35261d;
+  --neu-dark: #120c09;
 }
 
 @theme inline {
@@ -66,4 +92,92 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Neumorphism                                                             */
+/*                                                                          */
+/* Raised = dark shadow bottom-right + light shadow top-left (surface pops */
+/* out of the page). Pressed = the same pair flipped inset (surface sinks  */
+/* into the page — used for inputs and active/selected states).           */
+/* ---------------------------------------------------------------------- */
+
+:root {
+  --neu-raised-lg: 8px 8px 18px var(--neu-dark), -8px -8px 18px var(--neu-light);
+  --neu-raised: 5px 5px 12px var(--neu-dark), -5px -5px 12px var(--neu-light);
+  --neu-raised-sm: 3px 3px 7px var(--neu-dark), -3px -3px 7px var(--neu-light);
+  --neu-pressed: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light);
+  --neu-pressed-sm: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
+}
+
+/* Scopes the neumorphic shadow pair to the sidebar's own brown surface so
+   raised/pressed nav items don't use the cream page's light/dark shadow. */
+.neu-scope-sidebar {
+  --neu-light: var(--sidebar-neu-light);
+  --neu-dark: var(--sidebar-neu-dark);
+}
+
+.neu-raised-lg { box-shadow: var(--neu-raised-lg); }
+.neu-raised { box-shadow: var(--neu-raised); }
+.neu-raised-sm { box-shadow: var(--neu-raised-sm); }
+.neu-pressed { box-shadow: var(--neu-pressed); }
+.neu-pressed-sm { box-shadow: var(--neu-pressed-sm); }
+
+/* Auto-apply the raised look to every existing card/panel/modal/pill/button
+   that used to signal "surface" via a border, so the whole app re-themes
+   without having to touch each feature file individually. */
+.border.rounded-md,
+.border.rounded-lg,
+.border.rounded-xl,
+.border.rounded-full {
+  border-color: transparent;
+  box-shadow: var(--neu-raised-sm);
+  transition: box-shadow 0.15s ease;
+}
+
+.border.rounded-lg.shadow-lg,
+.border.rounded-md.shadow-lg {
+  box-shadow: var(--neu-raised-lg);
+}
+
+.border.rounded-md:active,
+.border.rounded-lg:active,
+.border.rounded-xl:active,
+.border.rounded-full:active {
+  box-shadow: var(--neu-pressed-sm);
+}
+
+/* A selected filter pill (bg-primary) reads as pressed-in / active. */
+.border.rounded-full.bg-primary {
+  border-color: transparent;
+  box-shadow: var(--neu-pressed-sm);
+}
+
+/* Form fields sink into the page instead of floating above it. */
+input.border,
+textarea.border,
+select.border,
+select.bg-secondary {
+  border-color: transparent !important;
+  background-color: var(--background) !important;
+  box-shadow: var(--neu-pressed-sm) !important;
+}
+
+input.border:focus,
+textarea.border:focus,
+select.border:focus,
+select.bg-secondary:focus {
+  box-shadow: var(--neu-pressed-sm), 0 0 0 2px var(--ring) !important;
+}
+
+/* Primary CTA buttons stay filled but still float above the page. */
+.bg-primary {
+  box-shadow: var(--neu-raised-sm);
+  transition: box-shadow 0.15s ease;
+}
+.bg-primary:hover {
+  box-shadow: var(--neu-raised);
+}
+.bg-primary:active {
+  box-shadow: var(--neu-pressed-sm);
 }

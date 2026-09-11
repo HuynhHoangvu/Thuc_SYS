@@ -1,6 +1,6 @@
 import { connectDB } from '@/lib/mongoose';
 import { Student, type StudentDoc } from '@/models/Student';
-import { Todo } from '@/models/Todo';
+import type { TodoDoc } from '@/models/Todo';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 import { createStudentSchema, listStudentsQuerySchema, toCreateData, toStudentDTO } from '@/lib/students/dto';
 
@@ -29,21 +29,22 @@ export const GET = withErrorHandling(async (req) => {
       { $sort: { _visaExpirySort: 1, createdAt: -1 } },
       { $skip: (page - 1) * limit },
       { $limit: limit },
+      // Join todos for just this page of students instead of a separate
+      // round trip against the whole todos collection.
+      {
+        $lookup: {
+          from: 'todos',
+          let: { studentId: { $toString: '$_id' } },
+          pipeline: [{ $match: { $expr: { $eq: ['$studentId', '$$studentId'] } } }],
+          as: 'todos',
+        },
+      },
     ]),
     Student.countDocuments(where),
   ]);
 
-  const studentIds = items.map((s) => String(s._id));
-  const todos = await Todo.find({ studentId: { $in: studentIds } });
-  const todosByStudent = new Map<string, (typeof todos)[number][]>();
-  for (const t of todos) {
-    const list = todosByStudent.get(t.studentId) ?? [];
-    list.push(t);
-    todosByStudent.set(t.studentId, list);
-  }
-
   return ok(
-    items.map((s) => toStudentDTO(s, (todosByStudent.get(String(s._id)) ?? []).map((t) => t.toObject()))),
+    items.map((s) => toStudentDTO(s, (s.todos ?? []) as TodoDoc[])),
     200,
     { total, page, limit, pages: Math.ceil(total / limit) || 1 }
   );

@@ -47,6 +47,9 @@ const StudentSchema = new Schema(
 
 StudentSchema.index({ stage: 1 });
 StudentSchema.index({ visaExpiry: 1 });
+StudentSchema.index({ destinationCountry: 1 });
+StudentSchema.index({ createdAt: -1 });
+StudentSchema.index({ email: 1 });
 
 export type StudentDoc = InferSchemaType<typeof StudentSchema> & { _id: mongoose.Types.ObjectId };
 

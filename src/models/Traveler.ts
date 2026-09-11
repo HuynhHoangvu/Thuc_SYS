@@ -43,6 +43,8 @@ const TravelerSchema = new Schema(
 TravelerSchema.index({ stage: 1 });
 TravelerSchema.index({ visaExpiry: 1 });
 TravelerSchema.index({ studentId: 1 });
+TravelerSchema.index({ destinationCountry: 1 });
+TravelerSchema.index({ createdAt: -1 });
 
 export type TravelerDoc = InferSchemaType<typeof TravelerSchema> & { _id: mongoose.Types.ObjectId };
 

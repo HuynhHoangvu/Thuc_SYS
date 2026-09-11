@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Users, ListChecks, Plane, Wallet, X } from 'lucide-react';
@@ -18,24 +19,37 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-svh bg-background">
+    <div className="flex min-h-svh bg-background p-3 sm:p-4">
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 -translate-x-full flex-col border-r border-border bg-card p-4 transition-transform',
-          'lg:sticky lg:top-0 lg:h-svh lg:translate-x-0',
+          'neu-scope-sidebar neu-raised-lg fixed inset-y-3 left-3 z-40 flex w-60 shrink-0 -translate-x-[calc(100%+2rem)] flex-col rounded-3xl bg-(--sidebar-bg) p-4 text-(--sidebar-foreground) transition-transform',
+          'lg:sticky lg:top-4 lg:h-[calc(100svh-2rem)] lg:translate-x-0',
           isMobileNavOpen && 'translate-x-0'
         )}
       >
-        <div className="mb-8 flex items-center justify-between px-2">
-          <span className="text-lg font-semibold text-card-foreground">CRM Du học</span>
+        <div className="mb-6 flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.jpg"
+              alt="Gián Catholic Global"
+              width={40}
+              height={40}
+              className="neu-raised-sm h-10 w-10 rounded-full object-cover"
+            />
+            <span className="text-sm font-semibold leading-tight text-(--sidebar-foreground)">
+              Gián Catholic
+              <br />
+              Global
+            </span>
+          </div>
           <button
             onClick={() => setIsMobileNavOpen(false)}
-            className="text-muted-foreground hover:text-foreground lg:hidden"
+            className="neu-raised-sm flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-(--sidebar-muted) hover:text-(--sidebar-foreground) active:shadow-none lg:hidden"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <nav className="flex flex-1 flex-col gap-1">
+        <nav className="flex flex-1 flex-col gap-2">
           {navItems.map(({ to, label, icon: Icon }) => {
             const isActive = pathname === to || pathname?.startsWith(`${to}/`);
             return (
@@ -44,13 +58,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 href={to}
                 onClick={() => setIsMobileNavOpen(false)}
                 className={cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition',
+                  'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'neu-pressed-sm text-(--sidebar-active-bg)'
+                    : 'text-(--sidebar-muted) hover:text-(--sidebar-foreground) hover:neu-raised-sm'
                 )}
               >
-                <Icon size={16} />
+                <span
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all',
+                    isActive
+                      ? 'bg-(--sidebar-active-bg) text-(--sidebar-active-foreground)'
+                      : 'bg-transparent'
+                  )}
+                >
+                  <Icon size={16} />
+                </span>
                 {label}
               </Link>
             );
@@ -65,17 +88,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 lg:hidden">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-4">
+        <div className="neu-raised-sm mb-3 flex items-center gap-3 rounded-2xl bg-background px-4 py-3 lg:hidden">
           <button
             onClick={() => setIsMobileNavOpen(true)}
             className="text-muted-foreground hover:text-foreground"
           >
             <Menu size={20} />
           </button>
-          <span className="text-base font-semibold text-card-foreground">CRM Du học</span>
+          <Image src="/logo.jpg" alt="Gián Catholic Global" width={28} height={28} className="rounded-full object-cover" />
+          <span className="text-base font-semibold text-card-foreground">Gián Catholic Global</span>
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-4">{children}</main>
       </div>
     </div>
   );
