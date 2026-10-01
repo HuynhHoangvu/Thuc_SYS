@@ -14,40 +14,73 @@ async function toDataUrl(src: string) {
   });
 }
 
+const IMG_SRC = /src="(\/email\/[\w-]+\.png)"/g;
+
 async function inlineImages(html: string) {
-  const srcs = [...new Set([...html.matchAll(/src="(\/email\/[\w-]+\.png)"/g)].map((m) => m[1]))];
+  const srcs = [...new Set([...html.matchAll(IMG_SRC)].map((m) => m[1]))];
   const data = new Map(await Promise.all(srcs.map(async (s) => [s, await toDataUrl(s)] as const)));
-  return html.replace(/src="(\/email\/[\w-]+\.png)"/g, (_m, s: string) => `src="${data.get(s)}"`);
+  return html.replace(IMG_SRC, (_m, s: string) => `src="${data.get(s)}"`);
 }
 
-// Rich copy: paste keeps colours, layout and images. Plain text is the fallback flavour.
-export async function copyEmailHtml(html: string, text: string) {
-  const rich = await inlineImages(html);
-  if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': new Blob([rich], { type: 'text/html' }),
-        'text/plain': new Blob([text], { type: 'text/plain' }),
-      }),
-    ]);
-    return;
-  }
-  // Older browsers: copy a rendered selection of the HTML.
+// Paste targets take the <body>; drop <head>/<style> so editors don't show stray CSS text.
+function bodyOnly(html: string) {
+  const m = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  return m ? m[1] : html;
+}
+
+// Old-style copy of a rendered selection; works where the async clipboard API is blocked.
+function copyViaSelection(html: string) {
   const holder = document.createElement('div');
+  holder.contentEditable = 'true';
   holder.style.position = 'fixed';
   holder.style.left = '-99999px';
-  holder.innerHTML = rich;
+  holder.style.top = '0';
+  holder.innerHTML = html;
   document.body.appendChild(holder);
   const range = document.createRange();
   range.selectNodeContents(holder);
   const sel = window.getSelection();
   sel?.removeAllRanges();
   sel?.addRange(range);
-  document.execCommand('copy');
+  const ok = document.execCommand('copy');
   sel?.removeAllRanges();
   holder.remove();
+  if (!ok) throw new Error('Trình duyệt chặn copy. Hãy thử lại hoặc dùng Chrome/Edge.');
+}
+
+// Rich copy: paste keeps colours, layout and images. Plain text is the fallback flavour.
+// Must be called directly from the click handler: browsers only allow clipboard writes during
+// the user gesture, so the write starts immediately with *promised* blobs (images load after).
+export async function copyEmailHtml(html: string, text: string) {
+  const richPromise = inlineImages(bodyOnly(html));
+  if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write && window.isSecureContext) {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': richPromise.then((r) => new Blob([r], { type: 'text/html' })),
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        }),
+      ]);
+      return;
+    } catch {
+      // fall through to the selection-based copy
+    }
+  }
+  copyViaSelection(await richPromise);
 }
 
 export async function copyText(text: string) {
-  await navigator.clipboard.writeText(text);
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-99999px';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (!ok) throw new Error('Trình duyệt chặn copy.');
+  }
 }

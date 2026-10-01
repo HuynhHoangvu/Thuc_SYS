@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type MutableRefObject } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentApi } from '../student.api';
@@ -9,6 +9,9 @@ import { NOTIFY_FIELDS } from '@/lib/notifications/templates';
 
 interface ProfileTabProps {
   student: Student;
+  // Lets the parent modal guard against closing with unsaved edits.
+  onDirtyChange?: (dirty: boolean) => void;
+  saveRef?: MutableRefObject<(() => Promise<boolean>) | null>;
 }
 
 type FormValues = {
@@ -67,13 +70,19 @@ const inputClass =
   'w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring';
 const labelClass = 'mb-1 block text-sm font-medium text-card-foreground';
 
-export function ProfileTab({ student }: ProfileTabProps) {
+export function ProfileTab({ student, onDirtyChange, saveRef }: ProfileTabProps) {
   const queryClient = useQueryClient();
   const { register, handleSubmit, reset, formState } = useForm<FormValues>({ defaultValues: toFormValues(student) });
 
   useEffect(() => {
     reset(toFormValues(student));
   }, [student, reset]);
+
+  const { isDirty } = formState;
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdateStudentInput) => studentApi.update(student.id, input),
@@ -83,8 +92,8 @@ export function ProfileTab({ student }: ProfileTabProps) {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    updateMutation.mutate({
+  async function onSubmit(values: FormValues) {
+    await updateMutation.mutateAsync({
       personal: {
         fullName: values.fullName,
         email: values.email,
@@ -118,8 +127,29 @@ export function ProfileTab({ student }: ProfileTabProps) {
     });
   }
 
+  useEffect(() => {
+    if (!saveRef) return;
+    saveRef.current = () =>
+      new Promise<boolean>((resolve) => {
+        void handleSubmit(
+          async (values) => {
+            try {
+              await onSubmit(values);
+              resolve(true);
+            } catch {
+              resolve(false);
+            }
+          },
+          () => resolve(false)
+        )();
+      });
+    return () => {
+      saveRef.current = null;
+    };
+  });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" className="flex flex-col gap-6">
       <section>
         <h3 className="mb-3 text-sm font-semibold text-card-foreground">Thông tin cá nhân</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -129,15 +159,15 @@ export function ProfileTab({ student }: ProfileTabProps) {
           </div>
           <div>
             <label className={labelClass}>Email cá nhân (nhận mail cập nhật)</label>
-            <input {...register('personalEmail')} type="email" className={inputClass} />
+            <input {...register('personalEmail')} type="email" autoComplete="off" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Email công ty tạo</label>
-            <input {...register('email')} type="email" className={inputClass} />
+            <input {...register('email')} type="email" autoComplete="off" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Mật khẩu email công ty</label>
-            <input {...register('emailPassword')} className={inputClass} />
+            <input {...register('emailPassword')} autoComplete="new-password" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Số điện thoại</label>

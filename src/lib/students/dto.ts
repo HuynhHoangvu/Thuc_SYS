@@ -67,6 +67,7 @@ export const updateStudentSchema = z.object({
   studyAbroad: studyAbroadSchema.optional(),
   stage: z.string().min(1).optional(),
   notes: z.string().optional(),
+  pinned: z.boolean().optional(),
 });
 
 export const listStudentsQuerySchema = z.object({
@@ -75,6 +76,8 @@ export const listStudentsQuerySchema = z.object({
   search: z.string().optional(),
   stage: z.string().optional(),
   destinationCountry: z.string().optional(),
+  // Quick filters: visa expiring within 30 days, open todos, next promised update due.
+  quick: z.enum(['visa', 'todo', 'due', 'pinned']).optional(),
 });
 
 export type CreateStudentInput = z.infer<typeof createStudentSchema>;
@@ -170,6 +173,7 @@ export function toUpdateData(input: UpdateStudentInput) {
   }
   if (input.stage !== undefined) data.stage = input.stage;
   if (input.notes !== undefined) data.notes = input.notes;
+  if (input.pinned !== undefined) data.pinned = input.pinned;
   for (const [key, value] of Object.entries(input.notifyInfo ?? {})) {
     data[`notifyInfo.${key}`] = value.trim();
   }
@@ -232,6 +236,7 @@ export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
     caseCode: s.caseCode ?? undefined,
     notifyInfo: notifyInfoToObject(s.notifyInfo),
     notifyOptOut: Boolean(s.notifyOptOut),
+    pinned: Boolean(s.pinned),
     emailBounced: Boolean(s.emailBounced),
     todos: (todos ?? [])
       .slice()

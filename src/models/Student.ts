@@ -49,6 +49,8 @@ const StudentSchema = new Schema(
     caseCode: { type: String },
     notifyInfo: { type: Map, of: String, default: {} },
     notifyOptOut: { type: Boolean, default: false },
+    // Starred in the list: kept at the top (students needing attention).
+    pinned: { type: Boolean, default: false },
     unsubscribeToken: { type: String },
     emailBounced: { type: Boolean, default: false },
   },
@@ -65,6 +67,10 @@ StudentSchema.index({ caseCode: 1 }, { unique: true, sparse: true });
 StudentSchema.index({ unsubscribeToken: 1 }, { unique: true, sparse: true });
 
 export type StudentDoc = InferSchemaType<typeof StudentSchema> & { _id: mongoose.Types.ObjectId };
+
+// In dev, hot reload keeps the old compiled model (and silently drops newly added fields),
+// so re-register it from the current schema. Production compiles once.
+if (process.env.NODE_ENV !== 'production' && mongoose.models.Student) mongoose.deleteModel('Student');
 
 export const Student =
   (mongoose.models.Student as mongoose.Model<StudentDoc>) || mongoose.model<StudentDoc>('Student', StudentSchema);

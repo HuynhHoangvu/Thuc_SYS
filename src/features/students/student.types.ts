@@ -46,6 +46,7 @@ export interface Student {
   caseCode?: string;
   notifyInfo: Record<string, string>;
   notifyOptOut: boolean;
+  pinned: boolean;
   emailBounced: boolean;
   todos: Todo[];
   createdAt: string;
@@ -56,6 +57,13 @@ export interface StudentListMeta {
   page: number;
   limit: number;
   pages: number;
+  // Counts for the filter chips, computed over all matching students (not just this page).
+  facets?: {
+    all: number;
+    countries: Record<string, number>;
+    stages: Record<string, number>;
+    due: number;
+  };
 }
 
 export interface StudentListParams {
@@ -64,6 +72,7 @@ export interface StudentListParams {
   search?: string;
   stage?: string;
   destinationCountry?: string;
+  quick?: 'visa' | 'todo' | 'due' | 'pinned';
 }
 
 export interface CreateStudentInput {
@@ -86,5 +95,6 @@ export interface UpdateStudentInput {
   studyAbroad?: Partial<Student['studyAbroad']>;
   stage?: StudentStage;
   notes?: string;
+  pinned?: boolean;
   notifyInfo?: Record<string, string>;
 }

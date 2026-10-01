@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { AlertCircle, ListChecks, Plus, Search } from 'lucide-react';
 import { studentApi } from './student.api';
 import { CreateStudentModal } from './CreateStudentModal';
 import { StudentDetailModal, type StudentDetailTabKey } from './detail/StudentDetailModal';
 import { StageSelect } from './StageSelect';
+import { PinButton } from './PinButton';
 import { SendEmailButton } from '@/features/notifications/SendEmailButton';
 import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
@@ -23,12 +24,6 @@ function daysUntil(dateStr?: string): number | null {
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / msPerDay);
-}
-
-// The "next update" date promised in the last email is due today or tomorrow (or already passed).
-function isUpdateDue(nextUpdate?: string) {
-  const days = daysUntil(nextUpdate);
-  return days !== null && days <= 1;
 }
 
 function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
@@ -51,18 +46,56 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
   );
 }
 
+// Country chips in this order; values match student.studyAbroad.destinationCountry.
+const COUNTRY_ORDER = ['USA', 'Canada', 'New Zealand'];
+
+const QUICK_FILTERS = [
+  { key: 'pinned', label: '★ Đã ghim', active: 'border-amber-500 bg-amber-500 text-white' },
+  { key: 'visa', label: 'Visa gần hết hạn', active: 'border-amber-500 bg-amber-500 text-white' },
+  { key: 'todo', label: 'Cần làm', active: 'border-red-500 bg-red-500 text-white' },
+  { key: 'due', label: 'Đến hạn cập nhật', active: 'border-sky-600 bg-sky-600 text-white' },
+] as const;
+
+const PAGE_SIZE = 30;
+
 export function StudentsListPage() {
   const [search, setSearch] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo' | 'due'>('all');
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo' | 'due' | 'pinned'>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<StudentDetailTabKey | undefined>(undefined);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['students', { search }],
-    queryFn: () => studentApi.list({ search: search || undefined, page: 1, limit: 20 }),
+  const [page, setPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Filtering, paging and chip counts happen on the server (see /api/students).
+  const filters = {
+    search: debouncedSearch || undefined,
+    destinationCountry: selectedCountry ?? undefined,
+    stage: selectedStage ?? undefined,
+    quick: selectedQuickFilter === 'all' ? undefined : selectedQuickFilter,
+  };
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ['students', { ...filters, page }],
+    queryFn: () => studentApi.list({ ...filters, page, limit: PAGE_SIZE }),
+    placeholderData: keepPreviousData,
   });
+  const facets = data?.meta.facets;
+  const pages = data?.meta.pages ?? 1;
+
+  // Any filter change goes back to page 1.
+  const [filterKey, setFilterKey] = useState('');
+  const currentKey = JSON.stringify(filters);
+  if (currentKey !== filterKey) {
+    setFilterKey(currentKey);
+    if (page !== 1) setPage(1);
+  }
 
   const { data: stagesData } = useQuery({
     queryKey: ['stages', 'student'],
@@ -81,46 +114,12 @@ export function StudentsListPage() {
       .sort((a, b) => (a.days as number) - (b.days as number));
   }, [data]);
 
-  const sortedStudents = useMemo(() => {
-    const stageOrder = new Map((stagesData ?? []).map((stage, index) => [stage.key, index]));
+  const visibleStudents = data?.data ?? [];
+  const dueCount = facets?.due ?? 0;
+  const countryCounts = new Map(Object.entries(facets?.countries ?? {}));
+  const stageCounts = new Map(Object.entries(facets?.stages ?? {}));
 
-    return [...(data?.data ?? [])].sort((a, b) => {
-      const aOrder = stageOrder.get(a.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
-      const bOrder = stageOrder.get(b.stage ?? '') ?? Number.MAX_SAFE_INTEGER;
-
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.personal.fullName.localeCompare(b.personal.fullName, 'vi');
-    });
-  }, [data, stagesData]);
-
-  const stageTitleMap = useMemo(() => {
-    return new Map((stagesData ?? []).map((stage) => [stage.key, stage.title]));
-  }, [stagesData]);
-
-  const dueCount = useMemo(
-    () => sortedStudents.filter((s) => isUpdateDue(s.notifyInfo?.ngayCapNhatTiepTheo)).length,
-    [sortedStudents]
-  );
-
-  const visibleStudents = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return sortedStudents.filter((student) => {
-      const matchesStage = !selectedStage || student.stage === selectedStage;
-      const matchesQuickFilter =
-        selectedQuickFilter === 'all' ||
-        (selectedQuickFilter === 'visa' && daysUntil(student.studyAbroad?.visaExpiry) !== null && daysUntil(student.studyAbroad?.visaExpiry)! <= VISA_WARNING_DAYS) ||
-        (selectedQuickFilter === 'todo' && (student.todos ?? []).some((todo: { done: boolean }) => !todo.done)) ||
-        (selectedQuickFilter === 'due' && isUpdateDue(student.notifyInfo?.ngayCapNhatTiepTheo));
-
-      const matchesSearch =
-        !normalizedSearch ||
-        student.personal.fullName.toLowerCase().includes(normalizedSearch) ||
-        (student.stage && (student.stage.toLowerCase().includes(normalizedSearch) || stageTitleMap.get(student.stage)?.toLowerCase().includes(normalizedSearch)));
-
-      return matchesStage && matchesQuickFilter && matchesSearch;
-    });
-  }, [search, selectedQuickFilter, selectedStage, sortedStudents, stageTitleMap]);
+  const hasFilter = Boolean(selectedCountry || selectedStage || selectedQuickFilter !== 'all');
 
   return (
     <div>
@@ -132,7 +131,7 @@ export function StudentsListPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên / giai đoạn…"
+              placeholder="Tìm theo tên / email…"
               className="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -173,88 +172,85 @@ export function StudentsListPage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={() => {
-            setSelectedStage(null);
-            setSelectedQuickFilter('all');
-          }}
-          className={cn(
-            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-            !selectedStage && selectedQuickFilter === 'all'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Tất cả
-        </button>
-
-        <button
-          onClick={() => {
-            setSelectedStage(null);
-            setSelectedQuickFilter('visa');
-          }}
-          className={cn(
-            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-            selectedQuickFilter === 'visa' && !selectedStage
-              ? 'border-amber-500 bg-amber-500 text-white'
-              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Visa gần hết hạn
-        </button>
-
-        <button
-          onClick={() => {
-            setSelectedStage(null);
-            setSelectedQuickFilter('todo');
-          }}
-          className={cn(
-            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-            selectedQuickFilter === 'todo' && !selectedStage
-              ? 'border-red-500 bg-red-500 text-white'
-              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Cần làm
-        </button>
-
-        <button
-          onClick={() => {
-            setSelectedStage(null);
-            setSelectedQuickFilter('due');
-          }}
-          className={cn(
-            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-            selectedQuickFilter === 'due' && !selectedStage
-              ? 'border-sky-600 bg-sky-600 text-white'
-              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Đến hạn cập nhật{dueCount ? ` (${dueCount})` : ''}
-        </button>
-
-        {(stagesData ?? []).map((stage) => (
-          <button
-            key={stage.id}
-            onClick={() => {
-              setSelectedStage(stage.key);
-              setSelectedQuickFilter('all');
-            }}
-            style={selectedStage === stage.key ? { backgroundColor: stage.color ?? '#d4d4d8' } : undefined}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-              selectedStage === stage.key
-                ? 'border-transparent text-[#2c1810]'
-                : 'border-border bg-background text-muted-foreground hover:text-foreground'
+      <div className="mb-4 flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quốc gia</span>
+          {[null, ...COUNTRY_ORDER].map((c) => {
+            const count = c ? countryCounts.get(c) ?? 0 : facets?.all ?? 0;
+            if (c && !count) return null;
+            const active = selectedCountry === c;
+            return (
+              <button
+                key={c ?? 'all'}
+                onClick={() => {
+                  setSelectedCountry(c);
+                  setSelectedStage(null);
+                }}
+                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+              >
+                {c ? COUNTRY_LABELS[c] ?? c : 'Tất cả'}
+                <span className="text-xs opacity-70">{count}</span>
+              </button>
+            );
+          })}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {QUICK_FILTERS.map((q) => (
+              <button
+                key={q.key}
+                onClick={() => setSelectedQuickFilter(selectedQuickFilter === q.key ? 'all' : q.key)}
+                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', selectedQuickFilter === q.key ? q.active : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+              >
+                {q.label}
+                {q.key === 'due' && dueCount ? <span className="text-xs opacity-70">{dueCount}</span> : null}
+              </button>
+            ))}
+            {hasFilter && (
+              <button
+                onClick={() => {
+                  setSelectedCountry(null);
+                  setSelectedStage(null);
+                  setSelectedQuickFilter('all');
+                }}
+                className="text-sm font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Xoá lọc
+              </button>
             )}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Giai đoạn</span>
+          <button
+            onClick={() => setSelectedStage(null)}
+            className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', !selectedStage ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
           >
-            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color ?? '#d4d4d8' }} />
-            {stage.title}
-            <span className="text-xs opacity-70">{sortedStudents.filter((x) => x.stage === stage.key).length}</span>
+            Tất cả
           </button>
-        ))}
+          {(stagesData ?? []).map((stage) => {
+            const count = stageCounts.get(stage.key) ?? 0;
+            const active = selectedStage === stage.key;
+            if (!count && !active) return null;
+            return (
+              <button
+                key={stage.id}
+                onClick={() => setSelectedStage(active ? null : stage.key)}
+                style={active ? { backgroundColor: stage.color ?? '#d4d4d8' } : undefined}
+                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', active ? 'border-transparent text-[#2c1810]' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+              >
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color ?? '#d4d4d8' }} />
+                {stage.title}
+                <span className="text-xs opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {!isLoading && !isError && hasFilter && visibleStudents.length === 0 && (
+        <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
+          Không có học sinh nào khớp bộ lọc.
+        </div>
+      )}
 
       {isLoading && (
         <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
@@ -280,6 +276,7 @@ export function StudentsListPage() {
             <table className="w-full min-w-[780px] text-left text-sm">
               <thead className="border-b border-border bg-muted/50 text-muted-foreground">
                 <tr>
+                  <th className="w-10 py-3 pl-3 pr-0 font-medium" aria-label="Ghim" />
                   <th className="px-4 py-3 font-medium">Họ tên</th>
                   <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Điểm đến</th>
@@ -299,6 +296,9 @@ export function StudentsListPage() {
                       onClick={() => openStudent(student.id)}
                       className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/40"
                     >
+                      <td className="py-3 pl-3 pr-0">
+                        <PinButton studentId={student.id} pinned={student.pinned} />
+                      </td>
                       <td className="px-4 py-3 font-medium text-card-foreground">{student.personal.fullName}</td>
                       <td className="px-4 py-3 text-muted-foreground">{student.personal.personalEmail ?? student.personal.email}</td>
                       <td className="px-4 py-3 text-muted-foreground">
@@ -352,7 +352,10 @@ export function StudentsListPage() {
                 >
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                      <div className="font-semibold text-card-foreground">{student.personal.fullName}</div>
+                      <div className="flex items-center gap-1 font-semibold text-card-foreground">
+                        <PinButton studentId={student.id} pinned={student.pinned} />
+                        {student.personal.fullName}
+                      </div>
                       <div className="text-xs text-muted-foreground">{student.personal.personalEmail ?? student.personal.email}</div>
                     </div>
                     <button
@@ -394,6 +397,30 @@ export function StudentsListPage() {
             })}
           </div>
         </>
+      )}
+      {pages > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            {data?.meta.total ?? 0} học sinh · trang {page}/{pages}
+            {isFetching ? ' · đang tải…' : ''}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="rounded-md border border-border px-3 py-1.5 font-medium hover:text-foreground disabled:opacity-40"
+            >
+              Trang trước
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(pages, p + 1))}
+              disabled={page >= pages}
+              className="rounded-md border border-border px-3 py-1.5 font-medium hover:text-foreground disabled:opacity-40"
+            >
+              Trang sau
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

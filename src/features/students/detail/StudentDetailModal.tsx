@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2, X } from 'lucide-react';
@@ -11,6 +11,7 @@ import { WorkflowTab } from './WorkflowTab';
 import { ChecklistTab } from './ChecklistTab';
 import { DocumentsTab } from './DocumentsTab';
 import { FormsTab } from './FormsTab';
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog';
 import { EmailsTab } from './EmailsTab';
 import { cn } from '@/lib/utils';
 
@@ -32,16 +33,36 @@ interface StudentDetailModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function StudentDetailModal({ studentId, initialTab, onOpenChange }: StudentDetailModalProps) {
+export function StudentDetailModal(props: StudentDetailModalProps) {
+  // A fresh detail form for each selected student also resets the requested initial tab
+  // without synchronously mirroring props into state from an effect.
+  return <StudentDetailModalContent key={`${props.studentId ?? 'closed'}:${props.initialTab ?? 'profile'}`} {...props} />;
+}
+
+function StudentDetailModalContent({ studentId, initialTab, onOpenChange }: StudentDetailModalProps) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<StudentDetailTabKey>(initialTab ?? 'profile');
+  // Unsaved-edits guard for the profile form: leaving (close or tab switch) asks first.
+  const [dirty, setDirty] = useState(false);
+  const saveRef = useRef<(() => Promise<boolean>) | null>(null);
+  const [pending, setPending] = useState<(() => void) | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (studentId) {
-      setActiveTab(initialTab ?? 'profile');
+  function guard(action: () => void) {
+    if (dirty) setPending(() => action);
+    else action();
+  }
+
+  async function saveAndContinue() {
+    setSaving(true);
+    const okSaved = (await saveRef.current?.()) ?? false;
+    setSaving(false);
+    if (okSaved) {
+      setDirty(false);
+      pending?.();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentId, initialTab]);
+    setPending(null);
+  }
 
   const { data: student, isLoading } = useQuery({
     queryKey: ['student', studentId],
@@ -65,10 +86,14 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
   }
 
   return (
-    <Dialog.Root open={Boolean(studentId)} onOpenChange={(next) => !next && onOpenChange(false)}>
+    <Dialog.Root open={Boolean(studentId)} onOpenChange={(next) => !next && guard(() => onOpenChange(false))}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
+        <Dialog.Content
+          // While the unsaved-changes prompt is open, clicks on it must not count as "outside".
+          onInteractOutside={(e) => pending !== null && e.preventDefault()}
+          onEscapeKeyDown={(e) => pending !== null && e.preventDefault()}
+          className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Title className="truncate text-base font-semibold text-card-foreground sm:text-lg">
               {student?.personal.fullName ?? 'Học sinh'}
@@ -94,7 +119,7 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => tab.key !== activeTab && guard(() => setActiveTab(tab.key))}
                   className={cn(
                     'shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm font-medium transition',
                     activeTab === tab.key
@@ -111,7 +136,7 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
               {isLoading && <p className="text-sm text-muted-foreground">Đang tải thông tin học sinh…</p>}
               {student && (
                 <>
-                  {activeTab === 'profile' && <ProfileTab student={student} />}
+                  {activeTab === 'profile' && <ProfileTab student={student} onDirtyChange={setDirty} saveRef={saveRef} />}
                   {activeTab === 'notes' && <NotesTab student={student} />}
                   {activeTab === 'workflow' && (
                     <WorkflowTab studentId={student.id} destinationCountry={student.studyAbroad?.destinationCountry} />
@@ -128,6 +153,17 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+      <UnsavedChangesDialog
+        open={pending !== null}
+        saving={saving}
+        onSave={saveAndContinue}
+        onDiscard={() => {
+          setDirty(false);
+          pending?.();
+          setPending(null);
+        }}
+        onCancel={() => setPending(null)}
+      />
     </Dialog.Root>
   );
 }
