@@ -181,3 +181,17 @@ select.border:focus {
 .bg-primary:active {
   box-shadow: var(--neu-pressed-sm);
 }
+
+/* Modals sit on a dark overlay, where the neumorphic white highlight reads as a
+   glowing halo. Give dialogs a plain soft drop shadow instead. */
+[role='dialog'].border {
+  box-shadow: 0 24px 60px -12px rgb(0 0 0 / 0.35) !important;
+}
+
+/* Native <select> dropdown lists inherit the pill's fill color; keep them on
+   the card surface so options are readable. */
+select option {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  text-transform: none;
+}

@@ -9,7 +9,10 @@ const StudentSchema = new Schema(
     nationality: { type: String },
     passportNumber: { type: String },
     passportExpiry: { type: Date },
-    email: { type: String, required: true },
+    // Mailbox the company creates for the student (with emailPassword).
+    email: { type: String },
+    // Student's own address; progress-update emails go here.
+    personalEmail: { type: String },
     emailPassword: { type: String },
     phone: { type: String },
     address: { type: String },
@@ -41,6 +44,13 @@ const StudentSchema = new Schema(
     stage: { type: String, default: 'lead' },
     stageOrder: { type: Number, default: 0 },
     notes: { type: String },
+
+    // progress-update emails
+    caseCode: { type: String },
+    notifyInfo: { type: Map, of: String, default: {} },
+    notifyOptOut: { type: Boolean, default: false },
+    unsubscribeToken: { type: String },
+    emailBounced: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -50,6 +60,9 @@ StudentSchema.index({ visaExpiry: 1 });
 StudentSchema.index({ destinationCountry: 1 });
 StudentSchema.index({ createdAt: -1 });
 StudentSchema.index({ email: 1 });
+StudentSchema.index({ personalEmail: 1 });
+StudentSchema.index({ caseCode: 1 }, { unique: true, sparse: true });
+StudentSchema.index({ unsubscribeToken: 1 }, { unique: true, sparse: true });
 
 export type StudentDoc = InferSchemaType<typeof StudentSchema> & { _id: mongoose.Types.ObjectId };
 

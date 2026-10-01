@@ -7,4 +7,13 @@ export interface Stage {
   color?: string;
   order: number;
   type: StageTemplateType;
+  emailTemplate?: StageEmailTemplate;
+}
+
+export interface StageEmailTemplate {
+  enabled: boolean;
+  presetKey?: string;
+  subject: string;
+  body: string;
+  nextUpdateDays: number;
 }

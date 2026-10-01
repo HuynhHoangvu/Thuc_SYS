@@ -214,14 +214,17 @@ export function TravelersListPage() {
               setSelectedStage(stage.key);
               setSelectedQuickFilter('all');
             }}
+            style={selectedStage === stage.key ? { backgroundColor: stage.color ?? '#d4d4d8' } : undefined}
             className={cn(
-              'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
               selectedStage === stage.key
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-transparent text-[#2c1810]'
                 : 'border-border bg-background text-muted-foreground hover:text-foreground'
             )}
           >
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color ?? '#d4d4d8' }} />
             {stage.title}
+            <span className="text-xs opacity-70">{sortedTravelers.filter((x) => x.stage === stage.key).length}</span>
           </button>
         ))}
       </div>

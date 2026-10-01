@@ -5,13 +5,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { workflowApi } from '@/features/workflow/workflow.api';
 import type { DestinationCountry } from '@/features/students/student.types';
+import { COUNTRY_LABELS } from '@/lib/countries';
 
 interface WorkflowTabProps {
   studentId: string;
   destinationCountry?: DestinationCountry;
 }
 
-const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
 
 export function WorkflowTab({ studentId, destinationCountry }: WorkflowTabProps) {
   const queryClient = useQueryClient();
@@ -71,7 +71,7 @@ export function WorkflowTab({ studentId, destinationCountry }: WorkflowTabProps)
             {availableTemplates.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
-                {t.country ? ` (${countryLabels[t.country] ?? t.country})` : ''}
+                {t.country ? ` (${COUNTRY_LABELS[t.country] ?? t.country})` : ''}
               </option>
             ))}
           </select>
@@ -90,7 +90,7 @@ export function WorkflowTab({ studentId, destinationCountry }: WorkflowTabProps)
       {progressList?.length === 0 && !isLoading && (
         <p className="text-sm text-muted-foreground">
           {destinationCountry
-            ? `Chưa có mẫu quy trình nào cho ${countryLabels[destinationCountry] ?? destinationCountry}. Tạo mới trong Mẫu quy trình.`
+            ? `Chưa có mẫu quy trình nào cho ${COUNTRY_LABELS[destinationCountry] ?? destinationCountry}. Tạo mới trong Mẫu quy trình.`
             : 'Chọn điểm đến du học trong tab Hồ sơ để tự động gán quy trình phù hợp, hoặc chọn thủ công ở trên.'}
         </p>
       )}

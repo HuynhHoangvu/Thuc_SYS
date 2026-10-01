@@ -12,3 +12,4 @@ Thumbs.db
 .vercel/
 *.tsbuildinfo
 src/generated/
+.mail-outbox/

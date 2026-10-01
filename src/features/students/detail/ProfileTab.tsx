@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentApi } from '../student.api';
 import type { Student, UpdateStudentInput } from '../student.types';
+import { NOTIFY_FIELDS } from '@/lib/notifications/templates';
 
 interface ProfileTabProps {
   student: Student;
@@ -14,6 +15,7 @@ type FormValues = {
   fullName: string;
   email: string;
   emailPassword: string;
+  personalEmail: string;
   phone: string;
   dateOfBirth: string;
   nationality: string;
@@ -31,6 +33,7 @@ type FormValues = {
   preferredMajor: string;
   visaIssuedDate: string;
   visaExpiry: string;
+  notifyInfo: Record<string, string>;
 };
 
 function toFormValues(student: Student): FormValues {
@@ -38,6 +41,7 @@ function toFormValues(student: Student): FormValues {
     fullName: student.personal.fullName ?? '',
     email: student.personal.email ?? '',
     emailPassword: student.personal.emailPassword ?? '',
+    personalEmail: student.personal.personalEmail ?? '',
     phone: student.personal.phone ?? '',
     dateOfBirth: student.personal.dateOfBirth ? student.personal.dateOfBirth.slice(0, 10) : '',
     nationality: student.personal.nationality ?? '',
@@ -55,6 +59,7 @@ function toFormValues(student: Student): FormValues {
     preferredMajor: student.studyAbroad?.preferredMajor ?? '',
     visaIssuedDate: student.studyAbroad?.visaIssuedDate ? student.studyAbroad.visaIssuedDate.slice(0, 10) : '',
     visaExpiry: student.studyAbroad?.visaExpiry ? student.studyAbroad.visaExpiry.slice(0, 10) : '',
+    notifyInfo: Object.fromEntries(NOTIFY_FIELDS.map((f) => [f.key, student.notifyInfo?.[f.key] ?? ''])),
   };
 }
 
@@ -84,6 +89,7 @@ export function ProfileTab({ student }: ProfileTabProps) {
         fullName: values.fullName,
         email: values.email,
         emailPassword: values.emailPassword || undefined,
+        personalEmail: values.personalEmail,
         phone: values.phone || undefined,
         dateOfBirth: values.dateOfBirth || undefined,
         nationality: values.nationality || undefined,
@@ -108,6 +114,7 @@ export function ProfileTab({ student }: ProfileTabProps) {
         visaIssuedDate: values.visaIssuedDate || undefined,
         visaExpiry: values.visaExpiry || undefined,
       },
+      notifyInfo: values.notifyInfo,
     });
   }
 
@@ -121,11 +128,15 @@ export function ProfileTab({ student }: ProfileTabProps) {
             <input {...register('fullName')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Email</label>
+            <label className={labelClass}>Email cá nhân (nhận mail cập nhật)</label>
+            <input {...register('personalEmail')} type="email" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Email công ty tạo</label>
             <input {...register('email')} type="email" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Mật khẩu email</label>
+            <label className={labelClass}>Mật khẩu email công ty</label>
             <input {...register('emailPassword')} className={inputClass} />
           </div>
           <div>
@@ -220,6 +231,21 @@ export function ProfileTab({ student }: ProfileTabProps) {
             <label className={labelClass}>Thời hạn visa</label>
             <input {...register('visaExpiry')} type="date" className={inputClass} />
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-1 text-sm font-semibold text-card-foreground">Thông tin gửi mail</h3>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Dùng để điền vào mail cập nhật hồ sơ. Popup gửi mail đọc và ghi cùng các ô này.
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {NOTIFY_FIELDS.map((f) => (
+            <div key={f.key}>
+              <label className={labelClass}>{f.label}</label>
+              <input {...register(`notifyInfo.${f.key}`)} type={f.type} className={inputClass} />
+            </div>
+          ))}
         </div>
       </section>
 

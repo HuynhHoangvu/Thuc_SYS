@@ -18,9 +18,12 @@ export const PUT = withErrorHandling(async (req, { params }: { params: Promise<{
   const { id } = await params;
   const body = updateStudentSchema.parse(await req.json());
   await connectDB();
-  const exists = await Student.exists({ _id: id });
-  if (!exists) throw new NotFoundError('Student not found');
-  const student = await Student.findByIdAndUpdate(id, toUpdateData(body), { new: true });
+  const current = await Student.findById(id, { personalEmail: 1 });
+  if (!current) throw new NotFoundError('Student not found');
+  const data = toUpdateData(body);
+  // Only a real email change clears the bounce warning.
+  if (data.personalEmail === current.personalEmail) delete data.emailBounced;
+  const student = await Student.findByIdAndUpdate(id, data, { new: true });
   if (!student) throw new NotFoundError('Student not found');
   const todos = await Todo.find({ studentId: id });
   return ok(toStudentDTO(student.toObject(), todos.map((t) => t.toObject())));

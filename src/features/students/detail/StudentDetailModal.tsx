@@ -11,6 +11,7 @@ import { WorkflowTab } from './WorkflowTab';
 import { ChecklistTab } from './ChecklistTab';
 import { DocumentsTab } from './DocumentsTab';
 import { FormsTab } from './FormsTab';
+import { EmailsTab } from './EmailsTab';
 import { cn } from '@/lib/utils';
 
 const TABS = [
@@ -20,6 +21,7 @@ const TABS = [
   { key: 'profile', label: 'Hồ sơ' },
   { key: 'documents', label: 'Tài liệu' },
   { key: 'forms', label: 'Biểu mẫu' },
+  { key: 'emails', label: 'Email' },
 ] as const;
 
 export type StudentDetailTabKey = (typeof TABS)[number]['key'];
@@ -65,8 +67,8 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
   return (
     <Dialog.Root open={Boolean(studentId)} onOpenChange={(next) => !next && onOpenChange(false)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Title className="truncate text-base font-semibold text-card-foreground sm:text-lg">
               {student?.personal.fullName ?? 'Học sinh'}
@@ -118,6 +120,7 @@ export function StudentDetailModal({ studentId, initialTab, onOpenChange }: Stud
                     <ChecklistTab studentId={student.id} destinationCountry={student.studyAbroad?.destinationCountry} />
                   )}
                   {activeTab === 'documents' && <DocumentsTab studentId={student.id} />}
+                  {activeTab === 'emails' && <EmailsTab student={student} />}
                   {activeTab === 'forms' && <FormsTab studentId={student.id} />}
                 </>
               )}

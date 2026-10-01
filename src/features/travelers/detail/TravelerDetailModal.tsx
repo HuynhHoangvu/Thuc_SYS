@@ -58,8 +58,8 @@ export function TravelerDetailModal({ travelerId, initialTab, onOpenChange }: Tr
   return (
     <Dialog.Root open={Boolean(travelerId)} onOpenChange={(next) => !next && onOpenChange(false)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 flex h-dvh w-screen -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border border-border bg-card shadow-lg sm:h-[85vh] sm:w-[92vw] sm:max-w-3xl sm:rounded-lg">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex h-dvh w-screen -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border border-border bg-card shadow-lg sm:h-[85vh] sm:w-[92vw] sm:max-w-3xl sm:rounded-lg">
           <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Title className="truncate text-base font-semibold text-card-foreground sm:text-lg">
               {traveler?.personal.fullName ?? 'Hồ sơ du lịch'}

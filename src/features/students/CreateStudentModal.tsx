@@ -10,7 +10,7 @@ import { studentApi } from './student.api';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Vui lòng nhập họ tên'),
-  email: z.string().email('Email không hợp lệ'),
+  personalEmail: z.string().email('Email không hợp lệ'),
   phone: z.string().optional(),
   destinationCountry: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
   preferredMajor: z.string().optional(),
@@ -35,7 +35,7 @@ export function CreateStudentModal({ open, onOpenChange }: CreateStudentModalPro
   const createMutation = useMutation({
     mutationFn: (values: FormValues) =>
       studentApi.create({
-        personal: { fullName: values.fullName, email: values.email, phone: values.phone || undefined },
+        personal: { fullName: values.fullName, personalEmail: values.personalEmail, phone: values.phone || undefined },
         studyAbroad: {
           destinationCountry: values.destinationCountry || undefined,
           preferredMajor: values.preferredMajor || undefined,
@@ -61,8 +61,8 @@ export function CreateStudentModal({ open, onOpenChange }: CreateStudentModalPro
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[90vh] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-border bg-card p-4 shadow-lg sm:p-6">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-border bg-card p-4 shadow-lg sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold text-card-foreground">Thêm học sinh</Dialog.Title>
             <Dialog.Close className="text-muted-foreground hover:text-foreground">
@@ -82,14 +82,14 @@ export function CreateStudentModal({ open, onOpenChange }: CreateStudentModalPro
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-card-foreground">Email</label>
+              <label className="mb-1 block text-sm font-medium text-card-foreground">Email cá nhân</label>
               <input
-                {...register('email')}
+                {...register('personalEmail')}
                 type="email"
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                 placeholder="hocsinh@example.com"
               />
-              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+              {errors.personalEmail && <p className="mt-1 text-xs text-red-500">{errors.personalEmail.message}</p>}
             </div>
 
             <div>

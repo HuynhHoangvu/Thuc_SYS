@@ -5,13 +5,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { checklistApi } from '@/features/checklists/checklist.api';
 import type { DestinationCountry } from '@/features/students/student.types';
+import { COUNTRY_LABELS } from '@/lib/countries';
 
 interface ChecklistTabProps {
   studentId: string;
   destinationCountry?: DestinationCountry;
 }
 
-const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
 
 export function ChecklistTab({ studentId, destinationCountry }: ChecklistTabProps) {
   const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ export function ChecklistTab({ studentId, destinationCountry }: ChecklistTabProp
             <option value="">Gán một checklist…</option>
             {availableTemplates.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.name} ({countryLabels[t.country] ?? t.country})
+                {t.name} ({COUNTRY_LABELS[t.country] ?? t.country})
               </option>
             ))}
           </select>
@@ -87,7 +87,7 @@ export function ChecklistTab({ studentId, destinationCountry }: ChecklistTabProp
       {progressList?.length === 0 && !isLoading && (
         <p className="text-sm text-muted-foreground">
           {destinationCountry
-            ? `Chưa có checklist nào cho ${countryLabels[destinationCountry] ?? destinationCountry}. Tạo mới trong Mẫu quy trình.`
+            ? `Chưa có checklist nào cho ${COUNTRY_LABELS[destinationCountry] ?? destinationCountry}. Tạo mới trong Mẫu quy trình.`
             : 'Chọn điểm đến du học trong tab Hồ sơ để tự động gán checklist phù hợp, hoặc chọn thủ công ở trên.'}
         </p>
       )}

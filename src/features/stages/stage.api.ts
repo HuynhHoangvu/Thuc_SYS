@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { Stage, StageTemplateType } from './stage.types';
+import type { Stage, StageEmailTemplate, StageTemplateType } from './stage.types';
 
 interface ListResponse {
   success: boolean;
@@ -20,7 +20,7 @@ export const stageApi = {
     const res = await api.post<ItemResponse>('/stages', input);
     return res.data.data;
   },
-  async update(id: string, input: { title?: string; color?: string }): Promise<Stage> {
+  async update(id: string, input: { title?: string; color?: string; emailTemplate?: StageEmailTemplate }): Promise<Stage> {
     const res = await api.put<ItemResponse>(`/stages/${id}`, input);
     return res.data.data;
   },

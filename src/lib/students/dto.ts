@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { StudentDoc } from '@/models/Student';
 import type { TodoDoc } from '@/models/Todo';
+import { NOTIFY_FIELDS } from '@/lib/notifications/templates';
 
 const personalSchema = z.object({
   fullName: z.string().min(2),
@@ -9,8 +10,9 @@ const personalSchema = z.object({
   nationality: z.string().optional(),
   passportNumber: z.string().optional(),
   passportExpiry: z.coerce.date().optional(),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal('')),
   emailPassword: z.string().optional(),
+  personalEmail: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -42,15 +44,25 @@ const studyAbroadSchema = z.object({
 });
 
 export const createStudentSchema = z.object({
-  personal: personalSchema,
+  personal: personalSchema.refine((p) => Boolean(p.personalEmail || p.email), {
+    message: 'Cần ít nhất một email',
+    path: ['personalEmail'],
+  }),
   academic: academicSchema.optional(),
   studyAbroad: studyAbroadSchema.optional(),
   stage: z.string().min(1).optional(),
   notes: z.string().optional(),
 });
 
+const notifyKeys = new Set<string>(NOTIFY_FIELDS.map((f) => f.key));
+
 export const updateStudentSchema = z.object({
   personal: personalSchema.partial().optional(),
+  // Email-only details (parent, staff, key dates); unknown keys are rejected.
+  notifyInfo: z
+    .record(z.string(), z.string())
+    .refine((v) => Object.keys(v).every((k) => notifyKeys.has(k)), 'Unknown notifyInfo field')
+    .optional(),
   academic: academicSchema.optional(),
   studyAbroad: studyAbroadSchema.optional(),
   stage: z.string().min(1).optional(),
@@ -79,7 +91,8 @@ export function toCreateData(input: CreateStudentInput) {
     nationality: input.personal.nationality,
     passportNumber: input.personal.passportNumber,
     passportExpiry: input.personal.passportExpiry,
-    email: input.personal.email.toLowerCase().trim(),
+    email: input.personal.email ? input.personal.email.toLowerCase().trim() : undefined,
+    personalEmail: input.personal.personalEmail ? input.personal.personalEmail.toLowerCase().trim() : undefined,
     emailPassword: input.personal.emailPassword,
     phone: input.personal.phone,
     address: input.personal.address,
@@ -121,6 +134,10 @@ export function toUpdateData(input: UpdateStudentInput) {
     if (p.passportNumber !== undefined) data.passportNumber = p.passportNumber;
     if (p.passportExpiry !== undefined) data.passportExpiry = p.passportExpiry;
     if (p.email !== undefined) data.email = p.email.toLowerCase().trim();
+    if (p.personalEmail !== undefined) {
+      data.personalEmail = p.personalEmail.toLowerCase().trim();
+      data.emailBounced = false;
+    }
     if (p.emailPassword !== undefined) data.emailPassword = p.emailPassword;
     if (p.phone !== undefined) data.phone = p.phone;
     if (p.address !== undefined) data.address = p.address;
@@ -153,10 +170,20 @@ export function toUpdateData(input: UpdateStudentInput) {
   }
   if (input.stage !== undefined) data.stage = input.stage;
   if (input.notes !== undefined) data.notes = input.notes;
+  for (const [key, value] of Object.entries(input.notifyInfo ?? {})) {
+    data[`notifyInfo.${key}`] = value.trim();
+  }
   return data;
 }
 
 type StudentLike = StudentDoc & { _id: unknown };
+
+// Mongoose Map fields come back as Map from documents and as plain objects from .lean()/.toObject().
+function notifyInfoToObject(info: unknown): Record<string, string> {
+  if (!info) return {};
+  if (info instanceof Map) return Object.fromEntries(info);
+  return { ...(info as Record<string, string>) };
+}
 
 export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
   const s = student;
@@ -171,6 +198,7 @@ export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
       passportExpiry: s.passportExpiry,
       email: s.email,
       emailPassword: s.emailPassword,
+      personalEmail: s.personalEmail ?? undefined,
       phone: s.phone,
       address: s.address,
     },
@@ -201,6 +229,10 @@ export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
     stage: s.stage,
     stageOrder: s.stageOrder,
     notes: s.notes,
+    caseCode: s.caseCode ?? undefined,
+    notifyInfo: notifyInfoToObject(s.notifyInfo),
+    notifyOptOut: Boolean(s.notifyOptOut),
+    emailBounced: Boolean(s.emailBounced),
     todos: (todos ?? [])
       .slice()
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())

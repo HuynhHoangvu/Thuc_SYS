@@ -12,8 +12,11 @@ export interface Student {
   id: string;
   personal: {
     fullName: string;
-    email: string;
+    // Company-created mailbox (with password) — not used for progress emails.
+    email?: string;
     emailPassword?: string;
+    // Student's own address; progress-update emails go here.
+    personalEmail?: string;
     phone?: string;
     dateOfBirth?: string;
     nationality?: string;
@@ -40,6 +43,10 @@ export interface Student {
   };
   stage: StudentStage;
   notes?: string;
+  caseCode?: string;
+  notifyInfo: Record<string, string>;
+  notifyOptOut: boolean;
+  emailBounced: boolean;
   todos: Todo[];
   createdAt: string;
 }
@@ -62,7 +69,8 @@ export interface StudentListParams {
 export interface CreateStudentInput {
   personal: {
     fullName: string;
-    email: string;
+    personalEmail: string;
+    email?: string;
     phone?: string;
   };
   studyAbroad?: {
@@ -78,4 +86,5 @@ export interface UpdateStudentInput {
   studyAbroad?: Partial<Student['studyAbroad']>;
   stage?: StudentStage;
   notes?: string;
+  notifyInfo?: Record<string, string>;
 }

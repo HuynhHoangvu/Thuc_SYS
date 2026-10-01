@@ -7,6 +7,13 @@ const StageTemplateSchema = new Schema(
     title: { type: String, required: true },
     color: { type: String },
     order: { type: Number, default: 0 },
+    emailTemplate: {
+      enabled: { type: Boolean, default: false },
+      presetKey: { type: String },
+      subject: { type: String },
+      body: { type: String },
+      nextUpdateDays: { type: Number, default: 7 },
+    },
   },
   { timestamps: true }
 );

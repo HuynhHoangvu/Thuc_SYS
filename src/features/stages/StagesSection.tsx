@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Mail, Plus, Trash2 } from 'lucide-react';
 import {
   DndContext,
   PointerSensor,
@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { stageApi } from './stage.api';
+import { StageEmailTemplateModal } from './StageEmailTemplateModal';
 import { slugify } from '@/lib/utils';
 import type { Stage, StageTemplateType } from './stage.types';
 
@@ -29,6 +30,7 @@ function SortableStageRow({
   onRenameCommit,
   onRecolor,
   onDelete,
+  onEditEmail,
   deleting,
 }: {
   stage: Stage;
@@ -37,6 +39,7 @@ function SortableStageRow({
   onRenameCommit: (value: string) => void;
   onRecolor: (color: string) => void;
   onDelete: () => void;
+  onEditEmail?: () => void;
   deleting: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stage.id });
@@ -72,6 +75,15 @@ function SortableStageRow({
         className="flex-1 rounded-md border border-border bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
       />
       <span className="shrink-0 text-xs text-muted-foreground">{stage.key}</span>
+      {onEditEmail && (
+        <button
+          onClick={onEditEmail}
+          className={`shrink-0 hover:text-foreground ${stage.emailTemplate?.enabled ? 'text-primary' : 'text-muted-foreground'}`}
+          title={stage.emailTemplate?.enabled ? 'Mẫu mail (đang bật)' : 'Mẫu mail'}
+        >
+          <Mail size={14} />
+        </button>
+      )}
       <button
         onClick={onDelete}
         disabled={deleting}
@@ -97,6 +109,7 @@ export function StagesSection({ type = 'student', title = 'Giai đoạn học si
   const [newColor, setNewColor] = useState('#a78bfa');
   const [renameDrafts, setRenameDrafts] = useState<Record<string, string>>({});
   const [orderedStages, setOrderedStages] = useState<Stage[]>([]);
+  const [emailStageId, setEmailStageId] = useState<string | null>(null);
 
   useEffect(() => {
     setOrderedStages((stages ?? []).slice().sort((a, b) => a.order - b.order));
@@ -175,6 +188,7 @@ export function StagesSection({ type = 'student', title = 'Giai đoạn học si
                     deleteMutation.mutate(stage.id);
                   }
                 }}
+                onEditEmail={type === 'student' ? () => setEmailStageId(stage.id) : undefined}
                 deleting={deleteMutation.isPending}
               />
             ))}
@@ -206,6 +220,10 @@ export function StagesSection({ type = 'student', title = 'Giai đoạn học si
         </button>
       </div>
       {createMutation.isError && <p className="mt-2 text-sm text-red-500">Không thể tạo giai đoạn (trùng tên?).</p>}
+      <StageEmailTemplateModal
+        stage={orderedStages.find((s) => s.id === emailStageId) ?? null}
+        onClose={() => setEmailStageId(null)}
+      />
     </div>
   );
 }

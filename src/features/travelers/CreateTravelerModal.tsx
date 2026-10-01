@@ -82,8 +82,8 @@ export function CreateTravelerModal({ open, onOpenChange }: CreateTravelerModalP
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[90vh] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-border bg-card p-4 shadow-lg sm:p-6">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-border bg-card p-4 shadow-lg sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold text-card-foreground">Thêm hồ sơ du lịch</Dialog.Title>
             <Dialog.Close className="text-muted-foreground hover:text-foreground">
@@ -127,7 +127,7 @@ export function CreateTravelerModal({ open, onOpenChange }: CreateTravelerModalP
                   <option value="">— Không liên kết —</option>
                   {(studentResults?.data ?? []).map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.personal.fullName} ({s.personal.email})
+                      {s.personal.fullName} ({s.personal.personalEmail ?? s.personal.email})
                     </option>
                   ))}
                 </select>

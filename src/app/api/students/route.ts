@@ -19,7 +19,7 @@ export const GET = withErrorHandling(async (req) => {
   }
   if (query.search) {
     const regex = new RegExp(query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    where.$or = [{ fullName: regex }, { email: regex }];
+    where.$or = [{ fullName: regex }, { email: regex }, { personalEmail: regex }];
   }
 
   const [items, total] = await Promise.all([

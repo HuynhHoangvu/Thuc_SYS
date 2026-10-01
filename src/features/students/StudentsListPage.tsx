@@ -7,10 +7,11 @@ import { studentApi } from './student.api';
 import { CreateStudentModal } from './CreateStudentModal';
 import { StudentDetailModal, type StudentDetailTabKey } from './detail/StudentDetailModal';
 import { StageSelect } from './StageSelect';
+import { SendEmailButton } from '@/features/notifications/SendEmailButton';
 import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
+import { COUNTRY_LABELS } from '@/lib/countries';
 
-const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
 
 const VISA_WARNING_DAYS = 30;
 
@@ -22,6 +23,12 @@ function daysUntil(dateStr?: string): number | null {
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / msPerDay);
+}
+
+// The "next update" date promised in the last email is due today or tomorrow (or already passed).
+function isUpdateDue(nextUpdate?: string) {
+  const days = daysUntil(nextUpdate);
+  return days !== null && days <= 1;
 }
 
 function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
@@ -47,7 +54,7 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
 export function StudentsListPage() {
   const [search, setSearch] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo'>('all');
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo' | 'due'>('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<StudentDetailTabKey | undefined>(undefined);
@@ -90,6 +97,11 @@ export function StudentsListPage() {
     return new Map((stagesData ?? []).map((stage) => [stage.key, stage.title]));
   }, [stagesData]);
 
+  const dueCount = useMemo(
+    () => sortedStudents.filter((s) => isUpdateDue(s.notifyInfo?.ngayCapNhatTiepTheo)).length,
+    [sortedStudents]
+  );
+
   const visibleStudents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
@@ -98,7 +110,8 @@ export function StudentsListPage() {
       const matchesQuickFilter =
         selectedQuickFilter === 'all' ||
         (selectedQuickFilter === 'visa' && daysUntil(student.studyAbroad?.visaExpiry) !== null && daysUntil(student.studyAbroad?.visaExpiry)! <= VISA_WARNING_DAYS) ||
-        (selectedQuickFilter === 'todo' && (student.todos ?? []).some((todo: { done: boolean }) => !todo.done));
+        (selectedQuickFilter === 'todo' && (student.todos ?? []).some((todo: { done: boolean }) => !todo.done)) ||
+        (selectedQuickFilter === 'due' && isUpdateDue(student.notifyInfo?.ngayCapNhatTiepTheo));
 
       const matchesSearch =
         !normalizedSearch ||
@@ -206,6 +219,21 @@ export function StudentsListPage() {
           Cần làm
         </button>
 
+        <button
+          onClick={() => {
+            setSelectedStage(null);
+            setSelectedQuickFilter('due');
+          }}
+          className={cn(
+            'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+            selectedQuickFilter === 'due' && !selectedStage
+              ? 'border-sky-600 bg-sky-600 text-white'
+              : 'border-border bg-background text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Đến hạn cập nhật{dueCount ? ` (${dueCount})` : ''}
+        </button>
+
         {(stagesData ?? []).map((stage) => (
           <button
             key={stage.id}
@@ -213,14 +241,17 @@ export function StudentsListPage() {
               setSelectedStage(stage.key);
               setSelectedQuickFilter('all');
             }}
+            style={selectedStage === stage.key ? { backgroundColor: stage.color ?? '#d4d4d8' } : undefined}
             className={cn(
-              'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
               selectedStage === stage.key
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-transparent text-[#2c1810]'
                 : 'border-border bg-background text-muted-foreground hover:text-foreground'
             )}
           >
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color ?? '#d4d4d8' }} />
             {stage.title}
+            <span className="text-xs opacity-70">{sortedStudents.filter((x) => x.stage === stage.key).length}</span>
           </button>
         ))}
       </div>
@@ -255,6 +286,7 @@ export function StudentsListPage() {
                   <th className="px-4 py-3 font-medium">Thời hạn visa</th>
                   <th className="px-4 py-3 font-medium">Giai đoạn</th>
                   <th className="px-4 py-3 font-medium">Việc cần làm</th>
+                  <th className="px-4 py-3 font-medium">Mail</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,17 +300,20 @@ export function StudentsListPage() {
                       className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/40"
                     >
                       <td className="px-4 py-3 font-medium text-card-foreground">{student.personal.fullName}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{student.personal.email}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{student.personal.personalEmail ?? student.personal.email}</td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {student.studyAbroad?.destinationCountry
-                          ? countryLabels[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry
+                          ? COUNTRY_LABELS[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry
                           : '—'}
                       </td>
                       <td className="px-4 py-3">
                         <VisaCountdown visaExpiry={student.studyAbroad?.visaExpiry} />
                       </td>
                       <td className="px-4 py-3">
-                        <StageSelect studentId={student.id} stage={student.stage} />
+                        <StageSelect
+                          studentId={student.id}
+                          stage={student.stage}
+                          country={student.studyAbroad?.destinationCountry} />
                       </td>
                       <td className="px-4 py-3">
                         <button
@@ -294,6 +329,9 @@ export function StudentsListPage() {
                         >
                           <ListChecks size={16} />
                         </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <SendEmailButton studentId={student.id} stage={student.stage} country={student.studyAbroad?.destinationCountry} />
                       </td>
                     </tr>
                   );
@@ -315,7 +353,7 @@ export function StudentsListPage() {
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
                       <div className="font-semibold text-card-foreground">{student.personal.fullName}</div>
-                      <div className="text-xs text-muted-foreground">{student.personal.email}</div>
+                      <div className="text-xs text-muted-foreground">{student.personal.personalEmail ?? student.personal.email}</div>
                     </div>
                     <button
                       onClick={(e) => {
@@ -334,7 +372,7 @@ export function StudentsListPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">Điểm đến</span>
-                      <span>{student.studyAbroad?.destinationCountry ? countryLabels[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry : '—'}</span>
+                      <span>{student.studyAbroad?.destinationCountry ? COUNTRY_LABELS[student.studyAbroad.destinationCountry] ?? student.studyAbroad.destinationCountry : '—'}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">Visa</span>
@@ -342,7 +380,13 @@ export function StudentsListPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <span className="text-muted-foreground">Giai đoạn</span>
-                      <StageSelect studentId={student.id} stage={student.stage} className="w-full" />
+                      <div className="flex items-center gap-2">
+                        <StageSelect
+                          studentId={student.id}
+                          stage={student.stage}
+                          country={student.studyAbroad?.destinationCountry} className="flex-1" />
+                        <SendEmailButton studentId={student.id} stage={student.stage} country={student.studyAbroad?.destinationCountry} />
+                      </div>
                     </div>
                   </div>
                 </div>
