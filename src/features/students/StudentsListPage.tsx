@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { AlertCircle, ListChecks, Plus, Search } from 'lucide-react';
+import { AlertCircle, ArrowUpDown, ListChecks, Plus, Search, Star, X } from 'lucide-react';
 import { studentApi } from './student.api';
 import { CreateStudentModal } from './CreateStudentModal';
 import { StudentDetailModal, type StudentDetailTabKey } from './detail/StudentDetailModal';
@@ -49,20 +49,34 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
 // Country chips in this order; values match student.studyAbroad.destinationCountry.
 const COUNTRY_ORDER = ['USA', 'Canada', 'New Zealand'];
 
-const QUICK_FILTERS = [
-  { key: 'pinned', label: '★ Đã ghim', active: 'border-amber-500 bg-amber-500 text-white' },
-  { key: 'visa', label: 'Visa gần hết hạn', active: 'border-amber-500 bg-amber-500 text-white' },
-  { key: 'todo', label: 'Cần làm', active: 'border-red-500 bg-red-500 text-white' },
-  { key: 'due', label: 'Đến hạn cập nhật', active: 'border-sky-600 bg-sky-600 text-white' },
-] as const;
-
 const PAGE_SIZE = 30;
+type QuickFilter = 'all' | 'visa' | 'todo' | 'due';
+type StudentSort = 'priority' | 'updated' | 'name-asc' | 'name-desc' | 'visa';
+
+function FilterChip({ label, color, onRemove }: { label: string; color?: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm">
+      {color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />}
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Bỏ lọc ${label}`}
+        className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+      >
+        <X size={12} />
+      </button>
+    </span>
+  );
+}
 
 export function StudentsListPage() {
   const [search, setSearch] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<'all' | 'visa' | 'todo' | 'due' | 'pinned'>('all');
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<QuickFilter>('all');
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [sort, setSort] = useState<StudentSort>('priority');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<StudentDetailTabKey | undefined>(undefined);
@@ -80,6 +94,8 @@ export function StudentsListPage() {
     destinationCountry: selectedCountry ?? undefined,
     stage: selectedStage ?? undefined,
     quick: selectedQuickFilter === 'all' ? undefined : selectedQuickFilter,
+    pinned: pinnedOnly || undefined,
+    sort,
   };
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ['students', { ...filters, page }],
@@ -119,7 +135,21 @@ export function StudentsListPage() {
   const countryCounts = new Map(Object.entries(facets?.countries ?? {}));
   const stageCounts = new Map(Object.entries(facets?.stages ?? {}));
 
-  const hasFilter = Boolean(selectedCountry || selectedStage || selectedQuickFilter !== 'all');
+  const hasFilter = Boolean(selectedCountry || selectedStage || selectedQuickFilter !== 'all' || pinnedOnly);
+
+  const selectedStageData = (stagesData ?? []).find((stage) => stage.key === selectedStage);
+  const quickFilterLabels: Record<Exclude<QuickFilter, 'all'>, string> = {
+    visa: 'Visa gần hết hạn',
+    todo: 'Cần làm',
+    due: 'Đến hạn cập nhật',
+  };
+
+  function clearFilters() {
+    setSelectedCountry(null);
+    setSelectedStage(null);
+    setSelectedQuickFilter('all');
+    setPinnedOnly(false);
+  }
 
   return (
     <div>
@@ -172,78 +202,94 @@ export function StudentsListPage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quốc gia</span>
-          {[null, ...COUNTRY_ORDER].map((c) => {
-            const count = c ? countryCounts.get(c) ?? 0 : facets?.all ?? 0;
-            if (c && !count) return null;
-            const active = selectedCountry === c;
-            return (
-              <button
-                key={c ?? 'all'}
-                onClick={() => {
-                  setSelectedCountry(c);
-                  setSelectedStage(null);
-                }}
-                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+      <div className="mb-4 rounded-lg border border-border bg-card p-3">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-3">
+            <select
+              aria-label="Lọc theo quốc gia"
+              value={selectedCountry ?? ''}
+              onChange={(event) => setSelectedCountry(event.target.value || null)}
+              className="min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Quốc gia · Tất cả ({facets?.all ?? 0})</option>
+              {COUNTRY_ORDER.map((country) => (
+                <option key={country} value={country} disabled={!countryCounts.get(country)}>
+                  {COUNTRY_LABELS[country] ?? country} ({countryCounts.get(country) ?? 0})
+                </option>
+              ))}
+            </select>
+
+            <select
+              aria-label="Lọc theo giai đoạn"
+              value={selectedStage ?? ''}
+              onChange={(event) => setSelectedStage(event.target.value || null)}
+              className="min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Giai đoạn · Tất cả</option>
+              {(stagesData ?? []).map((stage) => (
+                <option key={stage.id} value={stage.key} disabled={!stageCounts.get(stage.key) && selectedStage !== stage.key}>
+                  {stage.title} ({stageCounts.get(stage.key) ?? 0})
+                </option>
+              ))}
+            </select>
+
+            <select
+              aria-label="Lọc theo trạng thái"
+              value={selectedQuickFilter}
+              onChange={(event) => setSelectedQuickFilter(event.target.value as QuickFilter)}
+              className="min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">Trạng thái · Tất cả</option>
+              <option value="visa">Visa gần hết hạn</option>
+              <option value="todo">Cần làm</option>
+              <option value="due">Đến hạn cập nhật ({dueCount})</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={pinnedOnly}
+              onClick={() => setPinnedOnly((value) => !value)}
+              className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition-colors',
+                pinnedOnly ? 'bg-amber-500 text-white' : 'bg-background text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Star size={15} fill={pinnedOnly ? 'currentColor' : 'none'} />
+              Đã ghim
+            </button>
+
+            <label className="relative ml-auto lg:ml-0">
+              <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
+              <span className="sr-only">Sắp xếp</span>
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as StudentSort)}
+                className="h-9 rounded-md border border-border bg-background py-1.5 pl-9 pr-3 text-sm font-medium outline-none focus:ring-2 focus:ring-ring"
               >
-                {c ? COUNTRY_LABELS[c] ?? c : 'Tất cả'}
-                <span className="text-xs opacity-70">{count}</span>
-              </button>
-            );
-          })}
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            {QUICK_FILTERS.map((q) => (
-              <button
-                key={q.key}
-                onClick={() => setSelectedQuickFilter(selectedQuickFilter === q.key ? 'all' : q.key)}
-                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', selectedQuickFilter === q.key ? q.active : 'border-border bg-background text-muted-foreground hover:text-foreground')}
-              >
-                {q.label}
-                {q.key === 'due' && dueCount ? <span className="text-xs opacity-70">{dueCount}</span> : null}
-              </button>
-            ))}
-            {hasFilter && (
-              <button
-                onClick={() => {
-                  setSelectedCountry(null);
-                  setSelectedStage(null);
-                  setSelectedQuickFilter('all');
-                }}
-                className="text-sm font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-              >
-                Xoá lọc
-              </button>
-            )}
+                <option value="priority">Ưu tiên xử lý</option>
+                <option value="updated">Cập nhật gần nhất</option>
+                <option value="name-asc">Tên A–Z</option>
+                <option value="name-desc">Tên Z–A</option>
+                <option value="visa">Visa hết hạn sớm</option>
+              </select>
+            </label>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-20 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Giai đoạn</span>
-          <button
-            onClick={() => setSelectedStage(null)}
-            className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', !selectedStage ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
-          >
-            Tất cả
-          </button>
-          {(stagesData ?? []).map((stage) => {
-            const count = stageCounts.get(stage.key) ?? 0;
-            const active = selectedStage === stage.key;
-            if (!count && !active) return null;
-            return (
-              <button
-                key={stage.id}
-                onClick={() => setSelectedStage(active ? null : stage.key)}
-                style={active ? { backgroundColor: stage.color ?? '#d4d4d8' } : undefined}
-                className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors', active ? 'border-transparent text-[#2c1810]' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
-              >
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color ?? '#d4d4d8' }} />
-                {stage.title}
-                <span className="text-xs opacity-70">{count}</span>
-              </button>
-            );
-          })}
-        </div>
+
+        {hasFilter && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <span className="text-xs font-medium text-muted-foreground">Đang lọc:</span>
+            {selectedCountry && <FilterChip label={COUNTRY_LABELS[selectedCountry] ?? selectedCountry} onRemove={() => setSelectedCountry(null)} />}
+            {selectedStage && <FilterChip label={selectedStageData?.title ?? selectedStage} color={selectedStageData?.color} onRemove={() => setSelectedStage(null)} />}
+            {selectedQuickFilter !== 'all' && <FilterChip label={quickFilterLabels[selectedQuickFilter]} onRemove={() => setSelectedQuickFilter('all')} />}
+            {pinnedOnly && <FilterChip label="Đã ghim" onRemove={() => setPinnedOnly(false)} />}
+            <button type="button" onClick={clearFilters} className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline">
+              Xoá tất cả
+            </button>
+          </div>
+        )}
       </div>
 
       {!isLoading && !isError && hasFilter && visibleStudents.length === 0 && (
@@ -264,7 +310,7 @@ export function StudentsListPage() {
         </div>
       )}
 
-      {!isLoading && !isError && data?.data.length === 0 && (
+      {!isLoading && !isError && !hasFilter && data?.data.length === 0 && (
         <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-muted-foreground">
           Chưa có học sinh nào.
         </div>

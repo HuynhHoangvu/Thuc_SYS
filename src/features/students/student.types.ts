@@ -73,6 +73,8 @@ export interface StudentListParams {
   stage?: string;
   destinationCountry?: string;
   quick?: 'visa' | 'todo' | 'due' | 'pinned';
+  pinned?: boolean;
+  sort?: 'priority' | 'updated' | 'name-asc' | 'name-desc' | 'visa';
 }
 
 export interface CreateStudentInput {

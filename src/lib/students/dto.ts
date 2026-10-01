@@ -78,6 +78,8 @@ export const listStudentsQuerySchema = z.object({
   destinationCountry: z.string().optional(),
   // Quick filters: visa expiring within 30 days, open todos, next promised update due.
   quick: z.enum(['visa', 'todo', 'due', 'pinned']).optional(),
+  pinned: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
+  sort: z.enum(['priority', 'updated', 'name-asc', 'name-desc', 'visa']).optional(),
 });
 
 export type CreateStudentInput = z.infer<typeof createStudentSchema>;

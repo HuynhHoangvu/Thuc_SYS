@@ -41,20 +41,31 @@ export const GET = withErrorHandling(async (req) => {
     return {};
   };
   const quick = await quickMatch(query.quick);
+  const pinned: Record<string, unknown> = query.pinned ? { pinned: true } : {};
   const country: Record<string, unknown> = query.destinationCountry ? { destinationCountry: toDbCountry(query.destinationCountry) } : {};
   const stage: Record<string, unknown> = query.stage ? { stage: query.stage } : {};
-  const where = { ...base, ...quick, ...country, ...stage };
+  const where = { ...base, ...quick, ...pinned, ...country, ...stage };
 
   const stageKeys = (await StageTemplate.find({ type: 'student' }, { key: 1 }).sort({ order: 1 })).map((s) => s.key);
+
+  const sortSpec: Record<string, 1 | -1> =
+    query.sort === 'updated'
+      ? { updatedAt: -1, fullName: 1 }
+      : query.sort === 'name-asc'
+        ? { fullName: 1 }
+        : query.sort === 'name-desc'
+          ? { fullName: -1 }
+          : query.sort === 'visa'
+            ? { _hasVisa: 1, visaExpiry: 1, fullName: 1 }
+            : { _pinned: 1, _stageIdx: 1, fullName: 1 };
 
   const [items, total, countryRows, stageRows, dueCount] = await Promise.all([
     Student.aggregate([
       { $match: where },
-      // Order like the pipeline (stage order), then name; unknown stages last.
-      { $addFields: { _stageIdx: { $indexOfArray: [stageKeys, '$stage'] } } },
-      { $addFields: { _stageIdx: { $cond: [{ $lt: ['$_stageIdx', 0] }, stageKeys.length, '$_stageIdx'] } } },
-      { $addFields: { _pinned: { $cond: ['$pinned', 0, 1] } } },
-      { $sort: { _pinned: 1, _stageIdx: 1, fullName: 1 } },
+      // Derived fields keep missing visa dates last and preserve the pipeline order sort.
+      { $addFields: { _stageIdx: { $indexOfArray: [stageKeys, '$stage'] }, _hasVisa: { $cond: [{ $ne: ['$visaExpiry', null] }, 0, 1] } } },
+      { $addFields: { _stageIdx: { $cond: [{ $lt: ['$_stageIdx', 0] }, stageKeys.length, '$_stageIdx'] }, _pinned: { $cond: ['$pinned', 0, 1] } } },
+      { $sort: sortSpec },
       { $skip: (page - 1) * limit },
       { $limit: limit },
       // Join todos for just this page of students instead of the whole todos collection.
@@ -69,9 +80,9 @@ export const GET = withErrorHandling(async (req) => {
     ]),
     Student.countDocuments(where),
     // Country chips ignore the country/stage selection; stage chips respect the country.
-    Student.aggregate([{ $match: { ...base, ...quick } }, { $group: { _id: '$destinationCountry', n: { $sum: 1 } } }]),
-    Student.aggregate([{ $match: { ...base, ...quick, ...country } }, { $group: { _id: '$stage', n: { $sum: 1 } } }]),
-    Student.countDocuments({ ...base, ...country, ...stage, ...(await quickMatch('due')) }),
+    Student.aggregate([{ $match: { ...base, ...quick, ...pinned } }, { $group: { _id: '$destinationCountry', n: { $sum: 1 } } }]),
+    Student.aggregate([{ $match: { ...base, ...quick, ...pinned, ...country } }, { $group: { _id: '$stage', n: { $sum: 1 } } }]),
+    Student.countDocuments({ ...base, ...pinned, ...country, ...stage, ...(await quickMatch('due')) }),
   ]);
 
   const countries: Record<string, number> = {};
