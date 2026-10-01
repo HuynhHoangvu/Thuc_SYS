@@ -3,7 +3,7 @@
 Full-stack CRM for managing study-abroad students applying to the USA, Canada, and New Zealand.
 
 There is currently no authentication layer — every endpoint is open. See
-`MASTER_PROMPT_Study_Abroad_CRM.md` for the full spec.
+`docs/product-spec.md` for the original product specification.
 
 ## Stack
 
