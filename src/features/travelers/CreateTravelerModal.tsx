@@ -15,7 +15,7 @@ const formSchema = z.object({
   email: z.string().email('Email không hợp lệ').optional().or(z.literal('')),
   phone: z.string().optional(),
   relationToStudent: z.string().optional(),
-  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   purposeOfTrip: z.string().optional(),
   studentId: z.string().optional(),
 });

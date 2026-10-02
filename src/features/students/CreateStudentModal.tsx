@@ -12,7 +12,7 @@ const formSchema = z.object({
   fullName: z.string().min(2, 'Vui lòng nhập họ tên'),
   personalEmail: z.string().email('Email không hợp lệ'),
   phone: z.string().optional(),
-  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   preferredMajor: z.string().optional(),
 });
 
