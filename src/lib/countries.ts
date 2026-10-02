@@ -5,6 +5,8 @@ export const COUNTRY_LABELS: Record<string, string> = {
   Canada: 'Canada',
   'New Zealand': 'New Zealand',
   NewZealand: 'New Zealand',
+  Germany: 'Đức',
+  France: 'Pháp',
 };
 
 export function countryLabel(country?: string | null) {

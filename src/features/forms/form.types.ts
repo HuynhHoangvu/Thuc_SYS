@@ -12,7 +12,7 @@ export interface FormField {
 export interface FormTemplate {
   id: string;
   name: string;
-  country?: 'USA' | 'Canada' | 'New Zealand';
+  country?: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   description?: string;
   fields: FormField[];
   isActive: boolean;

@@ -11,7 +11,7 @@ import { uniqueSlugs } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Vui lòng nhập tên'),
-  country: z.enum(['USA', 'Canada', 'New Zealand']),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']),
   items: z
     .array(
       z.object({
@@ -90,6 +90,8 @@ export function CreateChecklistModal({ open, onOpenChange }: CreateChecklistModa
                 <option value="USA">Mỹ</option>
                 <option value="Canada">Canada</option>
                 <option value="New Zealand">New Zealand</option>
+                <option value="Germany">Đức</option>
+                <option value="France">Pháp</option>
               </select>
             </div>
 

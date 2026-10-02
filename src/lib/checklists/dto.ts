@@ -11,14 +11,14 @@ const itemSchema = z.object({
 
 export const createChecklistSchema = z.object({
   name: z.string().min(1),
-  country: z.enum(['USA', 'Canada', 'New Zealand']),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']),
   items: z.array(itemSchema).min(1),
 });
 
 export type ChecklistItem = z.infer<typeof itemSchema>;
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
-const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
+const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand', Germany: 'Germany', France: 'France' };
 
 export function countryToDb(country: string) {
   return countryDtoToDb[country];

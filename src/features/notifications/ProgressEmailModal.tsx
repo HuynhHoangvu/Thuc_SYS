@@ -61,6 +61,8 @@ const COUNTRY_OPTIONS: Array<{ value: DestinationCountry; label: string }> = [
   { value: 'USA', label: COUNTRY_LABELS.USA },
   { value: 'Canada', label: COUNTRY_LABELS.Canada },
   { value: 'New Zealand', label: COUNTRY_LABELS['New Zealand'] },
+  { value: 'Germany', label: COUNTRY_LABELS.Germany },
+  { value: 'France', label: COUNTRY_LABELS.France },
 ];
 
 const STAGE_EVENT_DATE: Record<string, string> = {

@@ -47,7 +47,7 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
 }
 
 // Country chips in this order; values match student.studyAbroad.destinationCountry.
-const COUNTRY_ORDER = ['USA', 'Canada', 'New Zealand'];
+const COUNTRY_ORDER = ['USA', 'Canada', 'New Zealand', 'Germany', 'France'];
 
 const PAGE_SIZE = 30;
 type QuickFilter = 'all' | 'visa' | 'todo' | 'due';

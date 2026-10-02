@@ -8,7 +8,7 @@ export interface ChecklistItem {
 export interface ChecklistTemplate {
   id: string;
   name: string;
-  country: 'USA' | 'Canada' | 'New Zealand';
+  country: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   items: ChecklistItem[];
 }
 

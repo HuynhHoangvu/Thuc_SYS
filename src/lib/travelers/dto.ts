@@ -15,7 +15,7 @@ const personalSchema = z.object({
 });
 
 const travelSchema = z.object({
-  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   visaType: z.string().optional(),
   purposeOfTrip: z.string().optional(),
   plannedDepartureDate: z.coerce.date().optional(),
@@ -63,8 +63,8 @@ export const listTravelersQuerySchema = z.object({
 export type CreateTravelerInput = z.infer<typeof createTravelerSchema>;
 export type UpdateTravelerInput = z.infer<typeof updateTravelerSchema>;
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
-const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
+const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand', Germany: 'Germany', France: 'France' };
 
 export function toCreateData(input: CreateTravelerInput) {
   return {

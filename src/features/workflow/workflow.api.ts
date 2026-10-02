@@ -18,7 +18,7 @@ interface ProgressResponse {
 
 interface CreateTemplateInput {
   name: string;
-  country?: 'USA' | 'Canada' | 'New Zealand';
+  country?: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   description?: string;
   steps: Array<{ key: string; title: string; description?: string; order: number; stage?: string }>;
 }

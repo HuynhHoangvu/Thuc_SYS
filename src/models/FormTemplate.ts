@@ -3,7 +3,7 @@ import mongoose, { Schema, type InferSchemaType } from 'mongoose';
 const FormTemplateSchema = new Schema(
   {
     name: { type: String, required: true },
-    country: { type: String, enum: ['USA', 'Canada', 'NewZealand'] },
+    country: { type: String, enum: ['USA', 'Canada', 'NewZealand', 'Germany', 'France'] },
     description: { type: String },
     fields: { type: Schema.Types.Mixed, required: true },
     isActive: { type: Boolean, default: true },

@@ -18,7 +18,7 @@ interface ProgressResponse {
 
 interface CreateChecklistInput {
   name: string;
-  country: 'USA' | 'Canada' | 'New Zealand';
+  country: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   items: Array<{ key: string; label: string; required?: boolean; order: number }>;
 }
 

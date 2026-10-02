@@ -27,7 +27,7 @@ const StudentSchema = new Schema(
     englishTestDate: { type: Date },
 
     // study abroad
-    destinationCountry: { type: String, enum: ['USA', 'Canada', 'NewZealand'] },
+    destinationCountry: { type: String, enum: ['USA', 'Canada', 'NewZealand', 'Germany', 'France'] },
     intakeTerm: { type: String },
     intakeYear: { type: Number },
     preferredUniversities: { type: [String], default: [] },

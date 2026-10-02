@@ -3,7 +3,7 @@ import mongoose, { Schema, type InferSchemaType } from 'mongoose';
 const ChecklistTemplateSchema = new Schema(
   {
     name: { type: String, required: true },
-    country: { type: String, enum: ['USA', 'Canada', 'NewZealand'], required: true },
+    country: { type: String, enum: ['USA', 'Canada', 'NewZealand', 'Germany', 'France'], required: true },
     items: { type: Schema.Types.Mixed, required: true },
   },
   { timestamps: true }

@@ -2,7 +2,7 @@ import { connectDB } from '@/lib/mongoose';
 import { Student } from '@/models/Student';
 import { ok, withErrorHandling } from '@/lib/api-handler';
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
 
 export const GET = withErrorHandling(async () => {
   await connectDB();

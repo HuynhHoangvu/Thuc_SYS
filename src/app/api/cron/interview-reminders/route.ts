@@ -25,7 +25,7 @@ export const GET = withErrorHandling(async (req) => {
   const students = await Student.find({
     'notifyInfo.lichPhongVan': { $gte: vnLocal(now), $lte: vnLocal(now + WINDOW_HOURS * 3600_000) },
     notifyOptOut: { $ne: true },
-    destinationCountry: { $nin: ['Canada', 'NewZealand'] },
+    destinationCountry: { $nin: ['Canada', 'NewZealand', 'Germany', 'France'] },
     emailBounced: { $ne: true },
     personalEmail: { $nin: [null, ''] },
   });

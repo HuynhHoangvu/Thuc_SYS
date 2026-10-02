@@ -169,6 +169,8 @@ export function ProfileTab({ traveler }: ProfileTabProps) {
               <option value="USA">Mỹ</option>
               <option value="Canada">Canada</option>
               <option value="New Zealand">New Zealand</option>
+              <option value="Germany">Đức</option>
+              <option value="France">Pháp</option>
             </select>
           </div>
           <div>

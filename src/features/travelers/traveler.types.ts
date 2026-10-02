@@ -1,4 +1,4 @@
-export type DestinationCountry = 'USA' | 'Canada' | 'New Zealand';
+export type DestinationCountry = 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
 export type TravelerStage = string;
 
 export interface Traveler {

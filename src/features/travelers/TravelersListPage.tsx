@@ -10,7 +10,7 @@ import { StageSelect } from './StageSelect';
 import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
 
-const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
+const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand', Germany: 'Đức', France: 'Pháp' };
 
 const VISA_WARNING_DAYS = 30;
 
@@ -138,6 +138,8 @@ export function TravelersListPage() {
             <option value="USA">Mỹ</option>
             <option value="Canada">Canada</option>
             <option value="New Zealand">New Zealand</option>
+            <option value="Germany">Đức</option>
+            <option value="France">Pháp</option>
           </select>
           <button
             onClick={() => setIsCreateOpen(true)}

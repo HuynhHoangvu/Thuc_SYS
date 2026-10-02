@@ -13,14 +13,14 @@ const fieldSchema = z.object({
 
 export const createFormTemplateSchema = z.object({
   name: z.string().min(1),
-  country: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   description: z.string().optional(),
   fields: z.array(fieldSchema).min(1),
 });
 
 export const updateFormTemplateSchema = z.object({
   name: z.string().min(1).optional(),
-  country: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   description: z.string().optional(),
   fields: z.array(fieldSchema).optional(),
   isActive: z.boolean().optional(),
@@ -28,8 +28,8 @@ export const updateFormTemplateSchema = z.object({
 
 export const submitFormSchema = z.object({ values: z.record(z.string(), z.unknown()) });
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
-const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
+const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand', Germany: 'Germany', France: 'France' };
 
 export function countryToDb(country?: string) {
   return country ? countryDtoToDb[country] : undefined;

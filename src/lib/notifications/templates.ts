@@ -156,12 +156,12 @@ export const STAFF_FIELD_KEYS: NotifyFieldKey[] = ['tenNhanVien', 'sdtNhanVien',
 // Canada and New Zealand use a different admission letter and visa process, so the presets
 // below replace the US text for those students. Phases 4–6 (interview) are US-only.
 
-export type CountryKey = 'USA' | 'Canada' | 'NewZealand';
+export type CountryKey = 'USA' | 'Canada' | 'NewZealand' | 'Germany' | 'France';
 
 // Student country comes as "NewZealand" from the DB and "New Zealand" from the API.
 export function countryKey(country?: string | null): CountryKey | undefined {
   const k = country?.replace(/\s+/g, '');
-  return k === 'USA' || k === 'Canada' || k === 'NewZealand' ? k : undefined;
+  return k === 'USA' || k === 'Canada' || k === 'NewZealand' || k === 'Germany' || k === 'France' ? (k as CountryKey) : undefined;
 }
 
 const NEXT_UPDATE = '**Cập nhật tiếp theo:** chậm nhất ngày {{ngayCapNhatTiepTheo}}.';
@@ -190,6 +190,28 @@ const COUNTRY_VARIANTS: Record<string, Partial<Record<CountryKey, { subject: str
         NEXT_UPDATE + ' Hoặc ngay khi có thông tin mới.'
       ),
     },
+    Germany: {
+      subject: SUBJECT,
+      body: body(
+        'Catholic MTA xin trân trọng cập nhật tiến độ hồ sơ du học Đức của em {{tenHocSinh}}.',
+        '**Tình trạng hiện tại:** Hồ sơ đã được nộp vào {{truong}} ngày {{ngayNopHoSo}} để xin Giấy báo nhập học (Zulassungsbescheid / Offer) và đang chờ nhà trường xét duyệt.',
+        '**Đang chờ:** Kết quả xét tuyển và Giấy báo nhập học từ nhà trường.',
+        '**Gia đình cần thực hiện:** Hiện tại chưa cần. Nếu trường yêu cầu bổ sung giấy tờ, chúng tôi sẽ thông báo ngay cho Quý gia đình.',
+        '**Bước tiếp theo:** Sau khi nhận Giấy báo nhập học, chúng tôi sẽ hướng dẫn gia đình chuẩn bị hồ sơ xin visa du học Đức (mở tài khoản phong tỏa Sperrkonto, bảo hiểm y tế).',
+        NEXT_UPDATE + ' Hoặc ngay khi có thông tin mới.'
+      ),
+    },
+    France: {
+      subject: SUBJECT,
+      body: body(
+        'Catholic MTA xin trân trọng cập nhật tiến độ hồ sơ du học Pháp của em {{tenHocSinh}}.',
+        '**Tình trạng hiện tại:** Hồ sơ đã được nộp vào {{truong}} ngày {{ngayNopHoSo}} để xin Thư chấp thuận nhập học (Attestation d\'admission / Offer) và đang chờ xét duyệt.',
+        '**Đang chờ:** Kết quả xét tuyển từ trường và quy trình phỏng vấn Etudes en France (Campus France).',
+        '**Gia đình cần thực hiện:** Hiện tại chưa cần. Nếu trường hoặc Campus France yêu cầu bổ sung giấy tờ, chúng tôi sẽ thông báo ngay cho Quý gia đình.',
+        '**Bước tiếp theo:** Sau khi hoàn tất quy trình Campus France và nhận thư mời, chúng tôi sẽ hướng dẫn gia đình nộp hồ sơ xin visa du học Pháp (France-Visas).',
+        NEXT_UPDATE + ' Hoặc ngay khi có thông tin mới.'
+      ),
+    },
   },
   gd3_i20_visa: {
     Canada: {
@@ -211,6 +233,28 @@ const COUNTRY_VARIANTS: Record<string, Partial<Record<CountryKey, { subject: str
         '**Đang chờ:** Kết quả xét duyệt visa từ Immigration New Zealand.',
         '**Gia đình cần thực hiện:**\n- Kiểm tra thông tin trên Offer of Place (họ tên, ngày sinh, khóa học) và báo ngay cho chuyên viên nếu có sai sót.\n- Chuẩn bị hồ sơ tài chính và các giấy tờ bổ sung theo danh sách chuyên viên cung cấp.\n- Em {{tenHocSinh}} thực hiện khám sức khỏe theo chỉ định nếu Sở Di trú yêu cầu.',
         '**Bước tiếp theo:** Khi có kết quả visa, chúng tôi sẽ thông báo ngay cho Quý gia đình.',
+        NEXT_UPDATE
+      ),
+    },
+    Germany: {
+      subject: SUBJECT,
+      body: body(
+        'Catholic MTA vui mừng thông báo em {{tenHocSinh}} đã nhận được Giấy báo nhập học (Zulassungsbescheid) từ {{truong}}.',
+        '**Tình trạng hiện tại:** Giấy báo nhập học được cấp ngày {{ngayCapThuMoi}}. Chúng tôi đang hoàn thiện hồ sơ xin visa du học Đức (Student Visa / Quốc gia D).',
+        '**Đang chờ:** Lịch hẹn nộp hồ sơ tại Đại sứ quán/Tổng Lãnh sự quán Đức hoặc Trung tâm tiếp nhận VFS Global.',
+        '**Gia đình cần thực hiện:**\n- Kiểm tra thông tin trên Giấy báo nhập học và báo ngay cho chuyên viên nếu có sai sót.\n- Hoàn tất thủ tục mở tài khoản phong tỏa (Sperrkonto) và mua bảo hiểm y tế theo hướng dẫn.\n- Chuẩn bị đầy đủ giấy tờ gốc và bản dịch công chứng theo danh mục chuyên viên cung cấp.',
+        '**Bước tiếp theo:** Chúng tôi sẽ đồng hành hướng dẫn em {{tenHocSinh}} chuẩn bị cho buổi nộp hồ sơ xin visa.',
+        NEXT_UPDATE
+      ),
+    },
+    France: {
+      subject: SUBJECT,
+      body: body(
+        'Catholic MTA vui mừng thông báo em {{tenHocSinh}} đã nhận được Thư chấp thuận nhập học từ {{truong}}.',
+        '**Tình trạng hiện tại:** Thư mời được cấp ngày {{ngayCapThuMoi}}. Chúng tôi đang chuẩn bị hồ sơ xin visa du học Pháp (Visa Long Séjour pour Etudes - VLS-TS).',
+        '**Đang chờ:** Xác thực hồ sơ Campus France và lịch hẹn nộp hồ sơ tại Trung tâm TLScontact.',
+        '**Gia đình cần thực hiện:**\n- Kiểm tra thông tin trên Thư chấp thuận và báo ngay cho chuyên viên nếu có sai sót.\n- Hoàn thành quy trình phỏng vấn Campus France (nếu được yêu cầu).\n- Chuẩn bị hồ sơ chứng minh tài chính và chỗ ở tại Pháp theo hướng dẫn của chuyên viên.',
+        '**Bước tiếp theo:** Khi hoàn tất hồ sơ, chúng tôi sẽ đặt lịch hẹn nộp visa tại TLScontact cho em {{tenHocSinh}}.',
         NEXT_UPDATE
       ),
     },

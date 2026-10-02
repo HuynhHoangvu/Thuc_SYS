@@ -18,7 +18,7 @@ interface SubmissionResponse {
 
 interface CreateFormTemplateInput {
   name: string;
-  country?: 'USA' | 'Canada' | 'New Zealand';
+  country?: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   fields: Array<{ key: string; label: string; type: FormTemplate['fields'][number]['type']; required?: boolean; order: number }>;
 }
 

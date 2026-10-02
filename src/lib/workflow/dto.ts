@@ -12,14 +12,14 @@ const stepSchema = z.object({
 
 export const createTemplateSchema = z.object({
   name: z.string().min(1),
-  country: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   description: z.string().optional(),
   steps: z.array(stepSchema).min(1),
 });
 
 export const updateTemplateSchema = z.object({
   name: z.string().min(1).optional(),
-  country: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  country: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   description: z.string().optional(),
   steps: z.array(stepSchema).optional(),
   isActive: z.boolean().optional(),
@@ -27,8 +27,8 @@ export const updateTemplateSchema = z.object({
 
 export type WorkflowStep = z.infer<typeof stepSchema>;
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
-const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
+const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand', Germany: 'Germany', France: 'France' };
 
 export function countryToDb(country?: string) {
   return country ? countryDtoToDb[country] : undefined;

@@ -20,7 +20,7 @@ When staff move a student to a later stage, a popup prefills the stage's email; 
 
 Each value has one home; the email reads it, never a copy.
 
-- **Country** (`quocGia`) → `student.destinationCountry`. DB stores `NewZealand`, API/UI use `New Zealand`; `countryKey()` / `COUNTRY_LABELS` handle both.
+- **Country** (`quocGia`) → `student.destinationCountry`. DB stores `USA`, `Canada`, `NewZealand`, `Germany`, `France`; API/UI use `USA`, `Canada`, `New Zealand`, `Germany`, `France`; `countryKey()` / `COUNTRY_LABELS` handle both.
 - **School** (`truong`) → `student.preferredUniversities[0]`. The popup select reorders that list.
 - **Email-only details** (parent, staff, key dates, interview) → `student.notifyInfo` (Mongo Map). Editable in Hồ sơ tab ("Thông tin gửi mail") and the popup; keys restricted to `NOTIFY_FIELDS`.
 - **Company contact, offices, social links** → constants in `render.ts` (the user's HTML design is authoritative; there are no env vars for them).
@@ -28,7 +28,7 @@ Each value has one home; the email reads it, never a copy.
 
 ## Country rules
 
-- Canada / NZ: GĐ2 & GĐ3 use the variant text (LOA / Offer of Place) via `resolveTemplate()`; stage titles shown in emails swap "I-20" via `localizeStageTitle()`.
+- Canada / NZ / Đức / Pháp: GĐ2 & GĐ3 use the variant text (LOA / Offer of Place / Zulassungsbescheid / Attestation) via `resolveTemplate()`; stage titles shown in emails swap "I-20" via `localizeStageTitle()`.
 - Phases GĐ4–6 (interview) are US-only: `presetAppliesTo()` hides the popup/mail button, drops them from the progress bar, and the cron skips non-US students.
 - Visa outcome stages (7A/7B) collapse into one "Kết quả visa" step until reached.
 

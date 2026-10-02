@@ -9,7 +9,7 @@ export interface WorkflowStep {
 export interface WorkflowTemplate {
   id: string;
   name: string;
-  country?: 'USA' | 'Canada' | 'New Zealand';
+  country?: 'USA' | 'Canada' | 'New Zealand' | 'Germany' | 'France';
   description?: string;
   steps: WorkflowStep[];
   isActive: boolean;

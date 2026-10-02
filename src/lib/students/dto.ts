@@ -28,7 +28,7 @@ const academicSchema = z.object({
 });
 
 const studyAbroadSchema = z.object({
-  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand']).optional(),
+  destinationCountry: z.enum(['USA', 'Canada', 'New Zealand', 'Germany', 'France']).optional(),
   intakeTerm: z.string().optional(),
   intakeYear: z.number().optional(),
   preferredUniversities: z.array(z.string()).optional(),
@@ -85,8 +85,8 @@ export const listStudentsQuerySchema = z.object({
 export type CreateStudentInput = z.infer<typeof createStudentSchema>;
 export type UpdateStudentInput = z.infer<typeof updateStudentSchema>;
 
-const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand' };
-const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand' };
+const countryDbToDto: Record<string, string> = { USA: 'USA', Canada: 'Canada', NewZealand: 'New Zealand', Germany: 'Germany', France: 'France' };
+const countryDtoToDb: Record<string, string> = { USA: 'USA', Canada: 'Canada', 'New Zealand': 'NewZealand', Germany: 'Germany', France: 'France' };
 
 export function toCreateData(input: CreateStudentInput) {
   return {

@@ -17,7 +17,7 @@ const TravelerSchema = new Schema(
     address: { type: String },
 
     // travel / visa
-    destinationCountry: { type: String, enum: ['USA', 'Canada', 'NewZealand'] },
+    destinationCountry: { type: String, enum: ['USA', 'Canada', 'NewZealand', 'Germany', 'France'] },
     visaType: { type: String },
     purposeOfTrip: { type: String },
     plannedDepartureDate: { type: Date },

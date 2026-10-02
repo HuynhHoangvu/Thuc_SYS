@@ -93,7 +93,7 @@ interface StepStage {
 }
 
 // Stage names mention the US letter (I-20); in emails for other countries use their letter instead.
-const ADMISSION_LETTER: Record<string, string> = { Canada: 'LOA', NewZealand: 'Offer' };
+const ADMISSION_LETTER: Record<string, string> = { Canada: 'LOA', NewZealand: 'Offer', Germany: 'Zulassung', France: 'Thư mời' };
 
 export function localizeStageTitle(title: string, country?: string | null) {
   const letter = ADMISSION_LETTER[countryKey(country) ?? ''];

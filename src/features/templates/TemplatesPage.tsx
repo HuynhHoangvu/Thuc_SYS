@@ -11,7 +11,7 @@ import { CreateChecklistModal } from './CreateChecklistModal';
 import { CreateFormTemplateModal } from './CreateFormTemplateModal';
 import { StagesSection } from '@/features/stages/StagesSection';
 
-const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand' };
+const countryLabels: Record<string, string> = { USA: 'Mỹ', Canada: 'Canada', 'New Zealand': 'New Zealand', Germany: 'Đức', France: 'Pháp' };
 
 function SectionHeader({ title, onAdd }: { title: string; onAdd: () => void }) {
   return (
