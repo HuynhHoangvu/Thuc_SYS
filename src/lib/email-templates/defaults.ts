@@ -12,6 +12,9 @@ const DEFAULTS = [
       ['Huỳnh Phát', '{{tenPhuHuynh}}'],
       ['MTA-2026-0001', '{{maHoSo}}'],
       ['02/10/2026', '{{ngayTiepNhan}}'],
+      ['hồ sơ du học Mỹ', 'hồ sơ du học {{quocGia}}'],
+      ['>Mỹ<', '>{{quocGia}}<'],
+      ['Hồ sơ du học Mỹ', 'Hồ sơ du học {{quocGia}}'],
     ],
   },
   {

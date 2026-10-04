@@ -15,6 +15,7 @@ const previewFields = [
   { key: 'tenPhuHuynh', label: 'Tên phụ huynh', placeholder: 'Nguyễn Văn Bình' },
   { key: 'maHoSo', label: 'Mã hồ sơ', placeholder: 'MTA-2026-0001' },
   { key: 'tenTruong', label: 'Tên trường', placeholder: 'Tên trường' },
+  { key: 'quocGia', label: 'Quốc gia', placeholder: 'Mỹ, Canada, Úc...' },
   { key: 'ngayTiepNhan', label: 'Ngày tiếp nhận', placeholder: '04/10/2026' },
   { key: 'ngayCapThu', label: 'Ngày cấp thư', placeholder: '04/10/2026' },
 ] as const;
@@ -34,10 +35,6 @@ function fillVariables(text: string, values: Record<string, string>) {
     const value = values[key]?.trim();
     return value ? escapeHtml(value) : raw;
   });
-}
-
-function fillTextVariables(text: string, values: Record<string, string>) {
-  return text.replace(/\{\{\s*([\w]+)\s*\}\}/g, (raw, key: string) => values[key]?.trim() || raw);
 }
 
 function toPlainText(html: string) {
@@ -201,7 +198,7 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
   const [values, setValues] = useState<Record<string, string>>({});
   const [copying, setCopying] = useState(false);
   const renderedHtml = useMemo(() => template ? fillVariables(template.html, values) : '', [template, values]);
-  const renderedSubject = useMemo(() => template ? fillTextVariables(template.subject, values) : '', [template, values]);
+  const renderedSubject = useMemo(() => template ? fillVariables(template.subject, values) : '', [template, values]);
 
   async function copyEmail() {
     setCopying(true);

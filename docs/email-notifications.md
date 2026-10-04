@@ -25,7 +25,7 @@ The separate `/email-templates` dashboard page is a general-purpose library for 
 - Dashboard UI: `src/features/email-templates/EmailTemplatesPage.tsx`
 - Original HTML sources: `email-templates/*.html`
 - On the first API read, `src/lib/email-templates/defaults.ts` imports the two original files and replaces their example data with editable placeholders.
-- Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`.
+- Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{quocGia}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`. In the thank-you template, the service is rendered as `Hồ sơ du học {{quocGia}}` rather than being fixed to Mỹ.
 - Built-in templates can be edited or duplicated but not deleted. User-created templates can be deleted.
 
 ## Single sources of truth
