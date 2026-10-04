@@ -37,6 +37,10 @@ function fillVariables(text: string, values: Record<string, string>) {
   });
 }
 
+function fillTextVariables(text: string, values: Record<string, string>) {
+  return text.replace(/\{\{\s*([\w]+)\s*\}\}/g, (raw, key: string) => values[key]?.trim() || raw);
+}
+
 function toPlainText(html: string) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.innerText.replace(/\n{3,}/g, '\n\n').trim();
@@ -198,7 +202,7 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
   const [values, setValues] = useState<Record<string, string>>({});
   const [copying, setCopying] = useState(false);
   const renderedHtml = useMemo(() => template ? fillVariables(template.html, values) : '', [template, values]);
-  const renderedSubject = useMemo(() => template ? fillVariables(template.subject, values) : '', [template, values]);
+  const renderedSubject = useMemo(() => template ? fillTextVariables(template.subject, values) : '', [template, values]);
 
   async function copyEmail() {
     setCopying(true);
