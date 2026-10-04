@@ -16,6 +16,18 @@ When staff move a student to a later stage, a popup prefills the stage's email; 
 | Brand images (logo, social icons) | `public/email/*.png` |
 | API | `src/app/api/students/[id]/notifications`, `api/cron/interview-reminders`, `api/webhooks/resend`, `api/unsubscribe/[token]`, page `app/huy-nhan/[token]` |
 
+## Reusable email library
+
+The separate `/email-templates` dashboard page is a general-purpose library for staff to store, edit, preview, duplicate and copy complete HTML emails into Gmail or Outlook. It does not send mail through Resend and does not replace the stage-progress email flow above.
+
+- Mongo model: `src/models/EmailTemplate.ts`
+- CRUD API: `src/app/api/email-templates`
+- Dashboard UI: `src/features/email-templates/EmailTemplatesPage.tsx`
+- Original HTML sources: `email-templates/*.html`
+- On the first API read, `src/lib/email-templates/defaults.ts` imports the two original files and replaces their example data with editable placeholders.
+- Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`.
+- Built-in templates can be edited or duplicated but not deleted. User-created templates can be deleted.
+
 ## Single sources of truth
 
 Each value has one home; the email reads it, never a copy.

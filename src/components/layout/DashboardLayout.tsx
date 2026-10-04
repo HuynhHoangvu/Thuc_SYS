@@ -4,13 +4,14 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Users, ListChecks, Plane, Wallet, X } from 'lucide-react';
+import { Mail, Menu, Users, ListChecks, Plane, Wallet, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { to: '/students', label: 'Học sinh', icon: Users },
   { to: '/travelers', label: 'Du lịch', icon: Plane },
   { to: '/templates', label: 'Mẫu quy trình', icon: ListChecks },
+  { to: '/email-templates', label: 'Mẫu email', icon: Mail },
   { to: '/salary', label: 'Lương', icon: Wallet },
 ];
 

@@ -1,0 +1,77 @@
+import dotenv from 'dotenv';
+import { MongoClient } from 'mongodb';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+
+dotenv.config({ path: '.env.local' });
+
+const defaults = [
+  {
+    seedKey: 'thank-you-catholic-mta',
+    file: 'thu-cam-on-catholic-mta-georgia-italic.html',
+    name: 'Thư cảm ơn Catholic MTA',
+    replacements: [
+      ['Huỳnh Hoàng Vũ', '{{tenHocSinh}}'],
+      ['Huỳnh Phát', '{{tenPhuHuynh}}'],
+      ['MTA-2026-0001', '{{maHoSo}}'],
+      ['02/10/2026', '{{ngayTiepNhan}}'],
+    ],
+  },
+  {
+    seedKey: 'progress-preview',
+    file: 'xem-truoc.html',
+    name: 'Cập nhật tiến độ hồ sơ',
+    replacements: [
+      ['[Tên học sinh]', '{{tenHocSinh}}'],
+      ['[Tên trường]', '{{tenTruong}}'],
+      ['[dd/mm/yyyy]', '{{ngayCapThu}}'],
+    ],
+  },
+];
+
+async function main() {
+  if (!process.argv.includes('--yes')) throw new Error('Add --yes to confirm updating the email template library.');
+  const live = process.argv.includes('--live');
+  const uri = live ? process.env.ATLAS_DATABASE_URL : process.env.DATABASE_URL;
+  if (!uri) throw new Error(`${live ? 'ATLAS_DATABASE_URL' : 'DATABASE_URL'} is not set.`);
+
+  const client = new MongoClient(uri);
+  await client.connect();
+  try {
+    const collection = client.db('thucsys').collection('emailtemplates');
+    for (const item of defaults) {
+      let html = await readFile(path.join(process.cwd(), 'email-templates', item.file), 'utf8');
+      for (const [from, to] of item.replacements) html = html.replaceAll(from, to);
+      const subject = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || 'Mẫu email Catholic MTA';
+      await collection.updateOne(
+        { seedKey: item.seedKey },
+        {
+          $setOnInsert: {
+            seedKey: item.seedKey,
+            name: item.name,
+            subject,
+            html,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    }
+
+    const saved = await collection
+      .find({ seedKey: { $in: defaults.map((item) => item.seedKey) } })
+      .project({ seedKey: 1, name: 1, html: 1 })
+      .toArray();
+    for (const template of saved) {
+      console.log(`${template.seedKey}: ${template.name} (${String(template.html).length} bytes)`);
+    }
+  } finally {
+    await client.close();
+  }
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});
