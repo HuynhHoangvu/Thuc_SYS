@@ -14,14 +14,12 @@ async function toDataUrl(src: string) {
   });
 }
 
-// NOTE: do NOT use /g flag on a module-level regex — it retains lastIndex across calls.
-const IMG_SRC = /src="(\/email\/[\w-]+\.png)"/;   // no /g → safe for .test()
-const IMG_SRC_G = /src="(\/email\/[\w-]+\.png)"/g; // /g used only inside functions
+const IMG_SRC = /src="(\/email\/[\w-]+\.png)"/g;
 
 async function inlineImages(html: string) {
-  const srcs = [...new Set([...html.matchAll(IMG_SRC_G)].map((m) => m[1]))];
+  const srcs = [...new Set([...html.matchAll(IMG_SRC)].map((m) => m[1]))];
   const data = new Map(await Promise.all(srcs.map(async (s) => [s, await toDataUrl(s)] as const)));
-  return html.replace(IMG_SRC_G, (_m, s: string) => `src="${data.get(s)}"`);
+  return html.replace(IMG_SRC, (_m, s: string) => `src="${data.get(s)}"`);
 }
 
 // Paste targets take the <body>; drop <head>/<style> so editors don't show stray CSS text.
@@ -69,25 +67,28 @@ function outlookSafe(html: string) {
 }
 
 // Rich copy: paste keeps colours, layout and images. Plain text is the fallback flavour.
-//
-// Root-cause note: the original code passed `richPromise` (a Promise<Blob>) as the text/html
-// value of ClipboardItem. Chrome writes the clipboard TWICE — once synchronously when the write
-// request is accepted (with text/plain only) and again when the HTML promise resolves — so Gmail
-// received two clipboard-change events and pasted two copies.  Fix: always await image inlining
-// first so both blobs are synchronous/resolved; same-origin images load well within Chrome's
-// ~1 s user-gesture window.
+// Must be called directly from the click handler: browsers only allow clipboard writes during
+// the user gesture, so the write starts immediately with *promised* blobs (images load after).
 export async function copyEmailHtml(html: string, text: string) {
-  const body = bodyOnly(html);
-
-  // Inline /email/*.png images as data URIs so they survive outside localhost.
-  // Awaited here (not deferred) to avoid the double-clipboard-write described above.
-  const richHtml = IMG_SRC.test(html) ? outlookSafe(await inlineImages(body)) : body;
-
+  // Copying a rendered selection (like Ctrl+C on the page) makes Chrome write every computed style
+  // (font, size, colour) inline, which Outlook's paste keeps far better than a raw HTML blob.
+  // Only possible while the click gesture is fresh, i.e. when no image has to be fetched first.
+  if (!IMG_SRC.test(html)) {
+    IMG_SRC.lastIndex = 0;
+    try {
+      copyViaSelection(bodyOnly(html));
+      return;
+    } catch {
+      // fall through to the clipboard API
+    }
+  }
+  IMG_SRC.lastIndex = 0;
+  const richPromise = inlineImages(bodyOnly(html)).then(outlookSafe);
   if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write && window.isSecureContext) {
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
-          'text/html': new Blob([richHtml], { type: 'text/html' }),
+          'text/html': richPromise.then((r) => new Blob([r], { type: 'text/html' })),
           'text/plain': new Blob([text], { type: 'text/plain' }),
         }),
       ]);
@@ -96,7 +97,7 @@ export async function copyEmailHtml(html: string, text: string) {
       // fall through to the selection-based copy
     }
   }
-  copyViaSelection(richHtml);
+  copyViaSelection(await richPromise);
 }
 
 export async function copyText(text: string) {
