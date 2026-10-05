@@ -35,6 +35,8 @@ function copyViaSelection(html: string) {
   holder.style.position = 'fixed';
   holder.style.left = '-99999px';
   holder.style.top = '0';
+  holder.style.width = '640px';
+  holder.style.background = '#ffffff';
   holder.innerHTML = html;
   document.body.appendChild(holder);
   const range = document.createRange();
@@ -68,6 +70,19 @@ function outlookSafe(html: string) {
 // Must be called directly from the click handler: browsers only allow clipboard writes during
 // the user gesture, so the write starts immediately with *promised* blobs (images load after).
 export async function copyEmailHtml(html: string, text: string) {
+  // Copying a rendered selection (like Ctrl+C on the page) makes Chrome write every computed style
+  // (font, size, colour) inline, which Outlook's paste keeps far better than a raw HTML blob.
+  // Only possible while the click gesture is fresh, i.e. when no image has to be fetched first.
+  if (!IMG_SRC.test(html)) {
+    IMG_SRC.lastIndex = 0;
+    try {
+      copyViaSelection(bodyOnly(html));
+      return;
+    } catch {
+      // fall through to the clipboard API
+    }
+  }
+  IMG_SRC.lastIndex = 0;
   const richPromise = inlineImages(bodyOnly(html)).then(outlookSafe);
   if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write && window.isSecureContext) {
     try {

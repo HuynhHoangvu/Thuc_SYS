@@ -189,6 +189,8 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
         .filter((k) => !AUTO_VARS.has(k))
         .map((k) => (k === 'tenTruong' ? 'truong' : (LIBRARY_FIELD_SOURCE[k] ?? k)))
     : findMissingVars([subject, body], vars).filter((k) => !AUTO_VARS.has(k));
+  // Copying by hand skips the server, which is what generates the case code, so it must exist already.
+  const copyBlocked = Boolean(libraryTemplate) && !caseCode.trim() && libTexts.some((t) => t.includes('{{maHoSo}}'));
   const shownSubject = libraryTemplate ? fillLibraryText(libraryTemplate.subject, libValues) : fillPlaceholders(subject, vars);
 
   const previewHtml = useMemo(
@@ -487,8 +489,8 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                 <button
                   key={kind}
                   onClick={() => handleCopy(kind)}
-                  disabled={!template || missing.length > 0}
-                  title="Dùng khi hệ thống gửi mail bị lỗi: copy rồi dán vào Gmail/Outlook"
+                  disabled={!template || missing.length > 0 || copyBlocked}
+                  title={copyBlocked ? 'Nhập Mã hồ sơ trước khi copy' : 'Dùng khi hệ thống gửi mail bị lỗi: copy rồi dán vào Gmail/Outlook'}
                   className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
                 >
                   {copied === kind ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
