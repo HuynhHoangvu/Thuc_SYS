@@ -189,8 +189,6 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
         .filter((k) => !AUTO_VARS.has(k))
         .map((k) => (k === 'tenTruong' ? 'truong' : (LIBRARY_FIELD_SOURCE[k] ?? k)))
     : findMissingVars([subject, body], vars).filter((k) => !AUTO_VARS.has(k));
-  // Copying by hand skips the server, which is what generates the case code, so it must exist already.
-  const copyBlocked = Boolean(libraryTemplate) && !caseCode.trim() && libTexts.some((t) => t.includes('{{maHoSo}}'));
   const shownSubject = libraryTemplate ? fillLibraryText(libraryTemplate.subject, libValues) : fillPlaceholders(subject, vars);
 
   const previewHtml = useMemo(
@@ -279,12 +277,18 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
   async function handleCopy(kind: 'subject' | 'body') {
     setCopyError(null);
     try {
-      if (kind === 'subject') await copyText(shownSubject);
-      else
-        await copyEmailHtml(
-          previewHtml,
-          libraryTemplate ? libraryHtmlToText(previewHtml) : renderEmailText(fillPlaceholders(body, vars)),
-        );
+      // The case code is normally created on the first sent mail; a hand copy needs it now.
+      let code = caseCode.trim();
+      if (libraryTemplate && !code && libTexts.some((t) => t.includes('{{maHoSo}}'))) {
+        code = await notificationApi.ensureCaseCode(studentId as string);
+        setCaseCode(code);
+        queryClient.invalidateQueries({ queryKey: ['student', studentId] });
+      }
+      const values = { ...libValues, maHoSo: code || libValues.maHoSo };
+      const subjectText = libraryTemplate ? fillLibraryText(libraryTemplate.subject, values) : shownSubject;
+      const html = libraryTemplate ? fillLibraryText(libraryTemplate.html, values, true) : previewHtml;
+      if (kind === 'subject') await copyText(subjectText);
+      else await copyEmailHtml(html, libraryTemplate ? libraryHtmlToText(html) : renderEmailText(fillPlaceholders(body, vars)));
       setCopied(kind);
       setTimeout(() => setCopied((c) => (c === kind ? null : c)), 2000);
     } catch (err) {
@@ -501,8 +505,8 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                 <button
                   key={kind}
                   onClick={() => handleCopy(kind)}
-                  disabled={!template || missing.length > 0 || copyBlocked}
-                  title={copyBlocked ? 'Nhập Mã hồ sơ trước khi copy' : 'Dùng khi hệ thống gửi mail bị lỗi: copy rồi dán vào Gmail/Outlook'}
+                  disabled={!template || missing.length > 0}
+                  title="Dùng khi hệ thống gửi mail bị lỗi: copy rồi dán vào Gmail/Outlook"
                   className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
                 >
                   {copied === kind ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}

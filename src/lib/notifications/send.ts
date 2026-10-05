@@ -26,7 +26,7 @@ export interface StudentNotificationInput {
 }
 
 // Gives the student a case code and unsubscribe token the first time they are emailed.
-async function ensureNotificationIds(student: StudentDocument) {
+export async function ensureNotificationIds(student: StudentDocument) {
   let changed = false;
   if (!student.caseCode) {
     const year = new Date().getFullYear();

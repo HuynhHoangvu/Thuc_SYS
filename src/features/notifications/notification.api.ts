@@ -28,6 +28,10 @@ export const notificationApi = {
     const res = await api.get<{ success: boolean; data: NotificationLog[] }>(`/students/${studentId}/notifications`);
     return res.data.data;
   },
+  async ensureCaseCode(studentId: string): Promise<string> {
+    const res = await api.post<{ success: boolean; data: { caseCode: string } }>(`/students/${studentId}/case-code`);
+    return res.data.data.caseCode;
+  },
   async send(studentId: string, input: SendNotificationInput): Promise<NotificationLog> {
     const res = await api.post<{ success: boolean; data: NotificationLog }>(`/students/${studentId}/notifications`, input);
     return res.data.data;
