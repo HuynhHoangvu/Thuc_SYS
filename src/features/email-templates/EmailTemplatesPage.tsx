@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, FilePlus2, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { emailTemplateApi } from './email-template.api';
 import type { EmailTemplate, EmailTemplateInput } from './email-template.types';
+import { copyEmailHtml } from '@/features/notifications/copyEmail';
 
 const inputClass =
   'w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring';
@@ -208,14 +209,9 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
     setCopying(true);
     try {
       const plain = toPlainText(renderedHtml);
-      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-        await navigator.clipboard.write([new ClipboardItem({
-          'text/html': new Blob([renderedHtml], { type: 'text/html' }),
-          'text/plain': new Blob([plain], { type: 'text/plain' }),
-        })]);
-      } else {
-        await navigator.clipboard.writeText(plain);
-      }
+      // Copy only the rendered body fragment. Supplying a complete HTML document
+      // can make Chromium-based mail editors paste both the document and fragment.
+      await copyEmailHtml(renderedHtml, plain);
       onNotice('Đã sao chép nội dung email. Bạn có thể dán trực tiếp vào Gmail hoặc Outlook.');
       onClose();
     } catch {
