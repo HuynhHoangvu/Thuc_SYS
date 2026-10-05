@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, FilePlus2, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { emailTemplateApi } from './email-template.api';
 import type { EmailTemplate, EmailTemplateInput } from './email-template.types';
+import { fillLibraryText } from '@/lib/email-templates/stage-library';
 import { copyEmailHtml } from '@/features/notifications/copyEmail';
 
 const inputClass =
@@ -29,25 +30,9 @@ const blankTemplate: EmailTemplateInput = {
   html: '<!doctype html>\n<html lang="vi">\n<head><meta charset="utf-8"><title>{{tenHocSinh}}</title></head>\n<body>\n  <p>Kính gửi em <strong>{{tenHocSinh}}</strong>,</p>\n  <p>Nội dung email...</p>\n</body>\n</html>',
 };
 
-function escapeHtml(value: string) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function fillVariables(text: string, values: Record<string, string>) {
-  return text.replace(/\{\{\s*([\w]+)\s*\}\}/g, (raw, key: string) => {
-    const value = values[key]?.trim();
-    return value ? escapeHtml(value) : raw;
-  });
-}
-
-function fillTextVariables(text: string, values: Record<string, string>) {
-  return text.replace(/\{\{\s*([\w]+)\s*\}\}/g, (raw, key: string) => values[key]?.trim() || raw);
-}
-
-function toPlainText(html: string) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.innerText.replace(/\n{3,}/g, '\n\n').trim();
-}
+// Same filler as the send popup and the server sender (stage-library), so every path renders identically.
+const fillVariables = (text: string, values: Record<string, string>) => fillLibraryText(text, values, true);
+const fillTextVariables = (text: string, values: Record<string, string>) => fillLibraryText(text, values);
 
 export function EmailTemplatesPage() {
   const queryClient = useQueryClient();
@@ -212,7 +197,7 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
     const text = template ? `${template.subject} ${template.html}` : '';
     return previewFields.filter((f) => text.includes(`{{${f.key}}}`));
   }, [template]);
-  const emptyFields = usedFields.filter((f) => !values[f.key]?.trim());
+  const emptyFields = usedFields.filter((f) => f.key !== 'tenPhuHuynh' && !values[f.key]?.trim());
 
   async function copyEmail() {
     if (emptyFields.length) {
@@ -221,10 +206,9 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
     }
     setCopying(true);
     try {
-      const plain = toPlainText(renderedHtml);
       // Copy only the rendered body fragment. Supplying a complete HTML document
       // can make Chromium-based mail editors paste both the document and fragment.
-      await copyEmailHtml(renderedHtml, plain);
+      await copyEmailHtml(renderedHtml);
       onNotice('Đã sao chép nội dung email. Bạn có thể dán trực tiếp vào Gmail hoặc Outlook.');
       onClose();
     } catch {

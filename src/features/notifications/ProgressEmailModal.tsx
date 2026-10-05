@@ -12,7 +12,6 @@ import {
   LIBRARY_FIELD_SOURCE,
   STAGE_LIBRARY_KEY,
   fillLibraryText,
-  libraryHtmlToText,
   libraryValues,
   missingLibraryValues,
 } from '@/lib/email-templates/stage-library';
@@ -35,7 +34,6 @@ import {
   fillPlaceholders,
   findMissingVars,
   renderEmailHtml,
-  renderEmailText,
   toDateInputValue,
 } from '@/lib/notifications/render';
 import { cn } from '@/lib/utils';
@@ -288,7 +286,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
       const subjectText = libraryTemplate ? fillLibraryText(libraryTemplate.subject, values) : shownSubject;
       const html = libraryTemplate ? fillLibraryText(libraryTemplate.html, values, true) : previewHtml;
       if (kind === 'subject') await copyText(subjectText);
-      else await copyEmailHtml(html, libraryTemplate ? libraryHtmlToText(html) : renderEmailText(fillPlaceholders(body, vars)));
+      else await copyEmailHtml(html);
       setCopied(kind);
       setTimeout(() => setCopied((c) => (c === kind ? null : c)), 2000);
     } catch (err) {

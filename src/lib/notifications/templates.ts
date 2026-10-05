@@ -265,9 +265,8 @@ const COUNTRY_VARIANTS: Record<string, Partial<Record<CountryKey, { subject: str
 // Phases that only exist in the US process (visa interview prep, schedule, reminder).
 export const US_ONLY_PRESETS = new Set(['gd4_luyen_pv', 'gd5_lich_pv', 'gd6_nhac_pv']);
 
-// Only stages linked to a library template (STAGE_LIBRARY_KEY) have a progress email.
 export function presetAppliesTo(presetKey: string | null | undefined, country?: string | null) {
-  if (!STAGE_LIBRARY_KEY[presetKey ?? '']) return false;
+  if (!presetKey) return false;
   const c = countryKey(country);
   return !(c && c !== 'USA' && US_ONLY_PRESETS.has(presetKey ?? ''));
 }

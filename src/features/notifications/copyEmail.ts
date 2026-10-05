@@ -18,6 +18,13 @@ async function toDataUrl(src: string) {
 const IMG_SRC = /src="(\/email\/[\w-]+\.png)"/;   // no /g → safe for .test()
 const IMG_SRC_G = /src="(\/email\/[\w-]+\.png)"/g; // /g used only inside functions
 
+// Public https origin → Gmail fetches the images itself (same as received mail); base64 pasted into
+// Gmail compose is often dropped. Localhost is unreachable for recipients, so it keeps data URIs.
+function publicOrigin() {
+  const o = window.location.origin;
+  return /^https:\/\//.test(o) && !/localhost|127\.0\.0\.1/.test(o) ? o : null;
+}
+
 async function inlineImages(html: string) {
   const srcs = [...new Set([...html.matchAll(IMG_SRC_G)].map((m) => m[1]))];
   const data = new Map(await Promise.all(srcs.map(async (s) => [s, await toDataUrl(s)] as const)));
@@ -50,23 +57,45 @@ function copyViaSelection(html: string) {
   if (!ok) throw new Error('Trình duyệt chặn copy. Hãy thử lại hoặc dùng Chrome/Edge.');
 }
 
+// Plain-text flavour built from the same HTML as the rich flavour, so both entry points
+// (template page and send popup) always produce identical text: entities decoded, one line per row.
+function htmlToPlain(html: string) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('style,script,head,img').forEach((n) => n.remove());
+  doc.querySelectorAll('br').forEach((n) => n.replaceWith('\n'));
+  doc.querySelectorAll('p,div,tr,table,h1,h2,h3,h4,h5,h6').forEach((n) => n.append('\n'));
+  doc.querySelectorAll('td,th').forEach((n) => n.append(' '));
+  return (doc.body.textContent ?? '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 // Rich copy: paste keeps colours, layout and images. Plain text is the fallback flavour.
 //
 // Root-cause note: passing a deferred Promise<Blob> to ClipboardItem causes Chrome to write
 // the clipboard TWICE (once synchronously with text/plain, once when resolved), causing double paste.
 // Always await image inlining first so both blobs are synchronous.
-export async function copyEmailHtml(html: string, text: string) {
+export async function copyEmailHtml(html: string) {
   const body = bodyOnly(html);
 
   // Inline /email/*.png images as data URIs so they survive outside localhost.
-  const richHtml = IMG_SRC.test(html) ? await inlineImages(body) : body;
+  const origin = publicOrigin();
+  const richHtml = !IMG_SRC.test(html)
+    ? body
+    : origin
+      ? body.replace(IMG_SRC_G, (_m, s: string) => `src="${origin}${s}"`)
+      : await inlineImages(body);
 
   if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write && window.isSecureContext) {
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
           'text/html': new Blob([richHtml], { type: 'text/html' }),
-          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/plain': new Blob([htmlToPlain(html)], { type: 'text/plain' }),
         }),
       ]);
       return;

@@ -17,6 +17,8 @@ export const LIBRARY_FIELD_SOURCE: Record<string, string> = {
   gioPhongVan: 'lichPhongVan',
 };
 
+import { dropParentWording, isParentOptionalKey } from '@/lib/notifications/parent-wording';
+
 const PLACEHOLDER = /\{\{\s*(\w+)\s*\}\}/g;
 
 function escapeHtml(s: string) {
@@ -54,12 +56,13 @@ export function libraryValues(vars: Record<string, string | undefined>): Record<
 
 export function missingLibraryValues(texts: string[], values: Record<string, string>) {
   const missing = new Set<string>();
-  for (const text of texts) for (const [, key] of text.matchAll(PLACEHOLDER)) if (!values[key]?.trim()) missing.add(key);
+  for (const text of texts) for (const [, key] of text.matchAll(PLACEHOLDER)) if (!values[key]?.trim() && !isParentOptionalKey(key)) missing.add(key);
   return [...missing];
 }
 
 export function fillLibraryText(text: string, values: Record<string, string>, asHtml = false) {
-  return text.replace(PLACEHOLDER, (raw, key: string) => {
+  const src = values.tenPhuHuynh?.trim() ? text : dropParentWording(text);
+  return src.replace(PLACEHOLDER, (raw, key: string) => {
     const v = values[key]?.trim();
     return v ? (asHtml ? escapeHtml(v) : v) : raw;
   });

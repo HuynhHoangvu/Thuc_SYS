@@ -26,6 +26,16 @@ function applyTestMode(input: MailInput): MailInput & { testMode: boolean } {
   return { ...input, to: testRecipient, cc: [], subject: `[TEST] ${input.subject}`, testMode: true };
 }
 
+// Library templates reference images as src="/email/<name>.png" (so preview and copy work in the app).
+// A mail client can't resolve that: point it at the public site when there is one, else attach it as cid:.
+function resolveAppImages(html: string) {
+  const appUrl = process.env.APP_URL?.replace(/\/$/, '');
+  const base = process.env.EMAIL_ASSET_URL?.trim().replace(/\/$/, '') || (appUrl?.startsWith('https://') ? `${appUrl}/email` : '');
+  return html.replace(/src="\/email\/([\w-]+)\.png"/g, (_m, name: string) =>
+    base ? `src="${base}/${name}.png"` : `src="cid:${name}"`
+  );
+}
+
 // Images referenced as cid:<name> are attached inline from public/email/<name>.png.
 // Every cid: reference gets its own attachment (logo-1, ico-phone-1, ico-phone-2…): Gmail's
 // mobile apps drop images at random when one inline attachment is referenced more than once.
@@ -55,7 +65,7 @@ async function inlineImages(html: string) {
 }
 
 export async function sendMail(raw: MailInput): Promise<MailResult> {
-  const input = applyTestMode(raw);
+  const input = applyTestMode({ ...raw, html: resolveAppImages(raw.html) });
   const apiKey = process.env.RESEND_API_KEY?.trim();
 
   // No provider configured (local dev): write the mail to disk so it can be opened in a browser.

@@ -1,4 +1,5 @@
 // Pure rendering helpers shared by the client preview and the server sender.
+import { dropParentWording, isParentOptionalKey } from './parent-wording';
 import { NOTIFY_FIELDS, countryKey, presetAppliesTo } from './templates';
 import { countryLabel } from '@/lib/countries';
 import { STRONG_STYLE, TEXT_TD_STYLE, letterCard, letterHead, letterSignature, letterSupport, letterTail } from './letter';
@@ -59,14 +60,15 @@ export function findMissingVars(texts: string[], vars: Record<string, string | u
   const missing = new Set<string>();
   for (const text of texts) {
     for (const [, key] of text.matchAll(PLACEHOLDER)) {
-      if (!vars[key]?.trim()) missing.add(key);
+      if (!vars[key]?.trim() && !isParentOptionalKey(key)) missing.add(key);
     }
   }
   return [...missing];
 }
 
 export function fillPlaceholders(text: string, vars: Record<string, string | undefined>) {
-  return text.replace(PLACEHOLDER, (raw, key: string) => {
+  const src = vars.tenPhuHuynh?.trim() ? text : dropParentWording(text);
+  return src.replace(PLACEHOLDER, (raw, key: string) => {
     const value = vars[key]?.trim();
     return value ? formatVarValue(key, value) : raw;
   });
