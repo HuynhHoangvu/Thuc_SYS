@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
@@ -118,7 +118,7 @@ function EditorDialog({ template, onClose }: { template: EmailTemplate | 'new' |
   return (
     <Dialog.Root open={template !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/45" />
         {template && <EditorForm key={template === 'new' ? 'new' : template.id} template={template} onClose={onClose} />}
       </Dialog.Portal>
     </Dialog.Root>
@@ -134,15 +134,18 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
   // reloaded when the HTML textarea changes, never from its own edits (that would reset the caret).
   const [seed, setSeed] = useState({ html: initial.html, rev: 0 });
   const frameRef = useRef<HTMLIFrameElement>(null);
-  // No sandbox on this frame: Chrome blocks editing inside a sandboxed document without allow-scripts.
-  // Edits are picked up by polling.
-  const pollRef = useRef<number>(0);
+
   function enableInlineEdit() {
     const doc = frameRef.current?.contentDocument;
     if (!doc?.body) return;
-    window.clearInterval(pollRef.current);
+
+    // designMode is more reliable than body.contentEditable alone in Chromium
+    // variants (including Cốc Cốc) when the editable document lives in srcDoc.
+    doc.designMode = 'on';
     doc.body.contentEditable = 'true';
     doc.body.style.outline = 'none';
+    doc.body.style.cursor = 'text';
+
     const serialize = () => {
       const clone = doc.documentElement.cloneNode(true) as HTMLElement;
       clone.querySelector('body')?.removeAttribute('contenteditable');
@@ -150,15 +153,11 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
       return `<!DOCTYPE html>
 ${clone.outerHTML}`;
     };
-    let last = serialize();
-    pollRef.current = window.setInterval(() => {
-      const html = serialize();
-      if (html === last) return;
-      last = html;
-      setForm((f) => ({ ...f, html }));
-    }, 400);
+
+    const syncHtml = () => setForm((current) => ({ ...current, html: serialize() }));
+    doc.addEventListener('input', syncHtml);
+    doc.addEventListener('blur', syncHtml, true);
   }
-  useEffect(() => () => window.clearInterval(pollRef.current), []);
   const mutation = useMutation({
     mutationFn: () => template === 'new' ? emailTemplateApi.create(form) : emailTemplateApi.update(template.id, form),
     onSuccess: async () => {
@@ -247,7 +246,7 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
   return (
     <Dialog.Root open={Boolean(template)} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/45" />
         {template && (
           <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[94vh] w-[96vw] max-w-7xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
