@@ -12,7 +12,7 @@ const sendSchema = z.object({
   to: z.string().email(),
   cc: z.array(z.string().email()).default([]),
   subject: z.string().min(1),
-  body: z.string().min(1),
+  body: z.string().default(''),
   notifyInfo: z.record(z.string(), z.string()).default({}),
 });
 

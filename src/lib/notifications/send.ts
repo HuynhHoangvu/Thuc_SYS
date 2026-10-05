@@ -7,6 +7,8 @@ import { nextSequence } from '@/models/Counter';
 import { BadRequestError } from '@/lib/errors';
 import { sendMail } from '@/lib/email/mailer';
 import { countryLabel } from '@/lib/countries';
+import { EmailTemplate } from '@/models/EmailTemplate';
+import { STAGE_LIBRARY_KEY, fillLibraryText, libraryHtmlToText, libraryValues, missingLibraryValues } from '@/lib/email-templates/stage-library';
 import { toDateInputValue, buildInfoRows, eyebrowFor, letterLabels, buildProgressSteps, headingFromStageTitle, fillPlaceholders, findMissingVars, renderEmailHtml, renderEmailText } from './render';
 
 type StudentDocument = HydratedDocument<StudentDoc>;
@@ -61,40 +63,58 @@ export async function sendStudentNotification(student: StudentDocument, input: S
   await ensureNotificationIds(student);
 
   const vars = studentVars(student);
-  const missing = findMissingVars([input.subject, input.body], vars);
-  if (missing.length) throw new BadRequestError(`Còn thiếu thông tin: ${missing.join(', ')}`);
-
   const stages = await StageTemplate.find({ type: 'student' }).sort({ order: 1 });
-  const subject = fillPlaceholders(input.subject, vars);
-  const body = fillPlaceholders(input.body, vars);
-  const appUrl = process.env.APP_URL?.replace(/\/$/, '');
   // No unsubscribe link in these service emails (decided 01/10/2026): families must keep getting updates.
   const stageTitle = stages.find((s) => s.key === input.stageKey)?.title;
   const presetKey =
     input.kind === 'interview_reminder'
       ? 'gd6_nhac_pv'
       : stages.find((s) => s.key === input.stageKey)?.emailTemplate?.presetKey;
-  const labels = letterLabels(presetKey);
-  const html = renderEmailHtml({
-    subject,
-    body,
-    ...buildProgressSteps(
-      stages.map((s) => s.toObject()),
-      input.stageKey,
-      student.destinationCountry
-    ),
-    eyebrow: eyebrowFor(student.destinationCountry ?? undefined),
-    ...labels,
-    heading: labels.heading ?? headingFromStageTitle(stageTitle, student.destinationCountry),
-    caseCode: student.caseCode ?? undefined,
-    info: buildInfoRows(vars, student.destinationCountry ?? undefined),
-    // Images need a public URL or Gmail shows them as attachment chips:
-    // EMAIL_ASSET_URL (a folder holding public/email/*.png) wins, then the deployed site's /email,
-    // and on localhost (unreachable for mail clients) they are embedded inline instead.
-    assetBase:
-      process.env.EMAIL_ASSET_URL?.trim() ||
-      (appUrl?.startsWith('https://') ? `${appUrl}/email` : 'cid:'),
-  });
+  const appUrl = process.env.APP_URL?.replace(/\/$/, '');
+
+  // A stage linked to a library template sends that template, filled with the student's values.
+  const libraryKey = input.kind === 'interview_reminder' ? undefined : STAGE_LIBRARY_KEY[presetKey ?? ''];
+  const library = libraryKey ? await EmailTemplate.findOne({ seedKey: libraryKey }) : null;
+
+  let subject: string;
+  let body: string;
+  let html: string;
+  let text: string;
+  if (library) {
+    const values = libraryValues(vars);
+    const missing = missingLibraryValues([library.subject, library.html], values);
+    if (missing.length) throw new BadRequestError(`Còn thiếu thông tin: ${missing.join(', ')}`);
+    subject = fillLibraryText(library.subject, values);
+    html = fillLibraryText(library.html, values, true);
+    body = text = libraryHtmlToText(html);
+  } else {
+    const missing = findMissingVars([input.subject, input.body], vars);
+    if (missing.length) throw new BadRequestError(`Còn thiếu thông tin: ${missing.join(', ')}`);
+    subject = fillPlaceholders(input.subject, vars);
+    body = fillPlaceholders(input.body, vars);
+    const labels = letterLabels(presetKey);
+    html = renderEmailHtml({
+      subject,
+      body,
+      ...buildProgressSteps(
+        stages.map((s) => s.toObject()),
+        input.stageKey,
+        student.destinationCountry
+      ),
+      eyebrow: eyebrowFor(student.destinationCountry ?? undefined),
+      ...labels,
+      heading: labels.heading ?? headingFromStageTitle(stageTitle, student.destinationCountry),
+      caseCode: student.caseCode ?? undefined,
+      info: buildInfoRows(vars, student.destinationCountry ?? undefined),
+      // Images need a public URL or Gmail shows them as attachment chips:
+      // EMAIL_ASSET_URL (a folder holding public/email/*.png) wins, then the deployed site's /email,
+      // and on localhost (unreachable for mail clients) they are embedded inline instead.
+      assetBase:
+        process.env.EMAIL_ASSET_URL?.trim() ||
+        (appUrl?.startsWith('https://') ? `${appUrl}/email` : 'cid:'),
+    });
+    text = renderEmailText(body);
+  }
 
   const base = {
     studentId: String(student._id),
@@ -112,7 +132,7 @@ export async function sendStudentNotification(student: StudentDocument, input: S
       cc: input.cc,
       subject,
       html,
-      text: renderEmailText(body),
+      text,
       threadId: `student-${student._id}`,
     });
     return await NotificationLog.create({ ...base, status: 'sent', providerId: result.providerId, testMode: result.testMode });

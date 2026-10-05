@@ -28,6 +28,10 @@ The separate `/email-templates` dashboard page is a general-purpose library for 
 - Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{quocGia}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`. In the thank-you template, the service is rendered as `Hồ sơ du học {{quocGia}}` rather than being fixed to Mỹ.
 - Built-in templates can be edited or duplicated but not deleted. User-created templates can be deleted.
 
+## Library templates in the popup
+
+Stages mapped in `STAGE_LIBRARY_KEY` (`src/lib/email-templates/stage-library.ts`) send the matching `/email-templates` library template instead of the built-in letter: GĐ1 → thank-you, GĐ3 → progress-preview, GĐ5 → interview-schedule. Popup preview and server send share `libraryValues()` (dates dd/mm/yyyy, interview time "10:30 sáng", country, case code), so they match. The text is edited in `/email-templates` (popup hides "Sửa nội dung" for these stages). Other stages still use `render.ts`. Data-URI images in library HTML are sent as inline attachments by `mailer.ts`.
+
 ## Single sources of truth
 
 Each value has one home; the email reads it, never a copy.

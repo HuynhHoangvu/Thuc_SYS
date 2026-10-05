@@ -34,7 +34,13 @@ async function inlineImages(html: string) {
   const attachments: Array<{ filename: string; content: Buffer; contentId: string }> = [];
   const counts = new Map<string, number>();
   const known = new Set<string>(EMAIL_ASSETS);
-  let out = html;
+  // Library templates embed their images as data: URIs, which Gmail blocks; send them as inline attachments.
+  let dataCount = 0;
+  let out = html.replace(/data:image\/(png|jpe?g|gif);base64,([A-Za-z0-9+/=]+)/g, (_m, ext: string, b64: string) => {
+    const id = `tpl-${++dataCount}`;
+    attachments.push({ filename: `${id}.${ext.replace('jpeg', 'jpg')}`, content: Buffer.from(b64, 'base64'), contentId: id });
+    return `cid:${id}`;
+  });
   for (const match of html.matchAll(/cid:([\w-]+)/g)) {
     const name = match[1];
     if (!known.has(name)) continue;

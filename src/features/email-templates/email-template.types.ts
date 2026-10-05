@@ -3,6 +3,7 @@ export interface EmailTemplate {
   name: string;
   subject: string;
   html: string;
+  seedKey?: string;
   isBuiltIn: boolean;
   createdAt?: string;
   updatedAt?: string;

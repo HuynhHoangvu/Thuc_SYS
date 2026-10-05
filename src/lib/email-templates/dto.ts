@@ -21,6 +21,7 @@ export function toEmailTemplateDTO(template: Template) {
     name: template.name,
     subject: template.subject,
     html: template.html,
+    seedKey: template.seedKey ?? undefined,
     isBuiltIn: Boolean(template.seedKey),
     createdAt: template.createdAt?.toISOString(),
     updatedAt: template.updatedAt?.toISOString(),
