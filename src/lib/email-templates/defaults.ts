@@ -43,6 +43,12 @@ const DEFAULTS = [
     name: 'Lịch luyện tập phỏng vấn nội bộ 1-1',
     replacements: [],
   },
+  {
+    seedKey: 'offer-letter-congrats',
+    file: 'thu-chuc-mung-nhan-offer-letter.html',
+    name: 'Thư chúc mừng nhận Offer Letter từ trường',
+    replacements: [],
+  },
 ] as const;
 
 function titleOf(html: string) {
