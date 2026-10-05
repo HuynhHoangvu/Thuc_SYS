@@ -93,7 +93,7 @@ export function ProfileTab({ student, onDirtyChange, saveRef }: ProfileTabProps)
   });
 
   async function onSubmit(values: FormValues) {
-    await updateMutation.mutateAsync({
+    const updated = await updateMutation.mutateAsync({
       personal: {
         fullName: values.fullName,
         email: values.email,
@@ -125,6 +125,9 @@ export function ProfileTab({ student, onDirtyChange, saveRef }: ProfileTabProps)
       },
       notifyInfo: values.notifyInfo,
     });
+    // Mark the just-saved values as the new baseline before a guarded tab switch/close.
+    reset(toFormValues(updated));
+    onDirtyChange?.(false);
   }
 
   useEffect(() => {

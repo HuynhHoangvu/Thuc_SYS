@@ -45,23 +45,34 @@ function StudentDetailModalContent({ studentId, initialTab, onOpenChange }: Stud
   // Unsaved-edits guard for the profile form: leaving (close or tab switch) asks first.
   const [dirty, setDirty] = useState(false);
   const saveRef = useRef<(() => Promise<boolean>) | null>(null);
-  const [pending, setPending] = useState<(() => void) | null>(null);
+  const pendingActionRef = useRef<(() => void) | null>(null);
+  const [hasPendingAction, setHasPendingAction] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function guard(action: () => void) {
-    if (dirty) setPending(() => action);
+    if (dirty) {
+      pendingActionRef.current = action;
+      setHasPendingAction(true);
+    }
     else action();
   }
 
   async function saveAndContinue() {
+    const action = pendingActionRef.current;
     setSaving(true);
     const okSaved = (await saveRef.current?.()) ?? false;
     setSaving(false);
     if (okSaved) {
       setDirty(false);
-      pending?.();
+      pendingActionRef.current = null;
+      setHasPendingAction(false);
+      action?.();
     }
-    setPending(null);
+  }
+
+  function cancelPending() {
+    pendingActionRef.current = null;
+    setHasPendingAction(false);
   }
 
   const { data: student, isLoading } = useQuery({
@@ -91,8 +102,8 @@ function StudentDetailModalContent({ studentId, initialTab, onOpenChange }: Stud
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
           // While the unsaved-changes prompt is open, clicks on it must not count as "outside".
-          onInteractOutside={(e) => pending !== null && e.preventDefault()}
-          onEscapeKeyDown={(e) => pending !== null && e.preventDefault()}
+          onInteractOutside={(e) => hasPendingAction && e.preventDefault()}
+          onEscapeKeyDown={(e) => hasPendingAction && e.preventDefault()}
           className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg sm:max-h-[85vh] sm:max-w-3xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <Dialog.Title className="truncate text-base font-semibold text-card-foreground sm:text-lg">
@@ -154,15 +165,16 @@ function StudentDetailModalContent({ studentId, initialTab, onOpenChange }: Stud
         </Dialog.Content>
       </Dialog.Portal>
       <UnsavedChangesDialog
-        open={pending !== null}
+        open={hasPendingAction}
         saving={saving}
         onSave={saveAndContinue}
         onDiscard={() => {
+          const action = pendingActionRef.current;
           setDirty(false);
-          pending?.();
-          setPending(null);
+          cancelPending();
+          action?.();
         }}
-        onCancel={() => setPending(null)}
+        onCancel={cancelPending}
       />
     </Dialog.Root>
   );

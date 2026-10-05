@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { AlertCircle, ArrowUpDown, ListChecks, Plus, Search, Star, X } from 'lucide-react';
 import { studentApi } from './student.api';
@@ -12,6 +12,7 @@ import { SendEmailButton } from '@/features/notifications/SendEmailButton';
 import { stageApi } from '@/features/stages/stage.api';
 import { cn } from '@/lib/utils';
 import { COUNTRY_LABELS } from '@/lib/countries';
+import { DailyNotesHeader } from '@/features/daily-notes/DailyNotesHeader';
 
 
 const VISA_WARNING_DAYS = 30;
@@ -46,12 +47,74 @@ function VisaCountdown({ visaExpiry }: { visaExpiry?: string }) {
   );
 }
 
+type TodoUrgency = 'due' | 'tomorrow' | 'open' | 'none';
+
+function todoUrgency(todos: Array<{ done: boolean; dueDate?: string }>): TodoUrgency {
+  const open = todos.filter((todo) => !todo.done);
+  if (!open.length) return 'none';
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const tomorrow = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+  if (open.some((todo) => todo.dueDate && todo.dueDate <= today)) return 'due';
+  if (open.some((todo) => todo.dueDate === tomorrow)) return 'tomorrow';
+  return 'open';
+}
+
 // Country chips in this order; values match student.studyAbroad.destinationCountry.
 const COUNTRY_ORDER = ['USA', 'Canada', 'New Zealand', 'Germany', 'France'];
 
 const PAGE_SIZE = 30;
 type QuickFilter = 'all' | 'visa' | 'todo' | 'due';
 type StudentSort = 'priority' | 'updated' | 'name-asc' | 'name-desc' | 'visa';
+
+interface StoredFilters {
+  search: string;
+  selectedStage: string | null;
+  selectedCountry: string | null;
+  selectedQuickFilter: QuickFilter;
+  pinnedOnly: boolean;
+  sort: StudentSort;
+}
+
+const FILTER_STORAGE_KEY = 'thucsys:student-filters';
+const FILTER_EVENT = 'thucsys-student-filters-change';
+const DEFAULT_FILTERS: StoredFilters = {
+  search: '', selectedStage: null, selectedCountry: null, selectedQuickFilter: 'all', pinnedOnly: false, sort: 'priority',
+};
+const DEFAULT_FILTERS_JSON = JSON.stringify(DEFAULT_FILTERS);
+
+function filterSnapshot() {
+  return typeof window === 'undefined' ? DEFAULT_FILTERS_JSON : localStorage.getItem(FILTER_STORAGE_KEY) ?? DEFAULT_FILTERS_JSON;
+}
+
+function subscribeToFilters(callback: () => void) {
+  const onStorage = (event: StorageEvent) => event.key === FILTER_STORAGE_KEY && callback();
+  window.addEventListener('storage', onStorage);
+  window.addEventListener(FILTER_EVENT, callback);
+  return () => {
+    window.removeEventListener('storage', onStorage);
+    window.removeEventListener(FILTER_EVENT, callback);
+  };
+}
+
+function parseFilters(snapshot: string): StoredFilters {
+  try {
+    return { ...DEFAULT_FILTERS, ...JSON.parse(snapshot) };
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
+
+function useStoredFilters() {
+  const snapshot = useSyncExternalStore(subscribeToFilters, filterSnapshot, () => DEFAULT_FILTERS_JSON);
+  const filters = useMemo(() => parseFilters(snapshot), [snapshot]);
+  function update(patch: Partial<StoredFilters>) {
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({ ...filters, ...patch }));
+    window.dispatchEvent(new Event(FILTER_EVENT));
+  }
+  return { filters, update };
+}
 
 function FilterChip({ label, color, onRemove }: { label: string; color?: string; onRemove: () => void }) {
   return (
@@ -71,12 +134,14 @@ function FilterChip({ label, color, onRemove }: { label: string; color?: string;
 }
 
 export function StudentsListPage() {
-  const [search, setSearch] = useState('');
-  const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<QuickFilter>('all');
-  const [pinnedOnly, setPinnedOnly] = useState(false);
-  const [sort, setSort] = useState<StudentSort>('priority');
+  const { filters: storedFilters, update: updateFilters } = useStoredFilters();
+  const { search, selectedStage, selectedCountry, selectedQuickFilter, pinnedOnly, sort } = storedFilters;
+  const setSearch = (value: string) => updateFilters({ search: value });
+  const setSelectedStage = (value: string | null) => updateFilters({ selectedStage: value });
+  const setSelectedCountry = (value: string | null) => updateFilters({ selectedCountry: value });
+  const setSelectedQuickFilter = (value: QuickFilter) => updateFilters({ selectedQuickFilter: value });
+  const setPinnedOnly = (value: boolean) => updateFilters({ pinnedOnly: value });
+  const setSort = (value: StudentSort) => updateFilters({ sort: value });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailInitialTab, setDetailInitialTab] = useState<StudentDetailTabKey | undefined>(undefined);
@@ -153,8 +218,9 @@ export function StudentsListPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <h1 className="text-2xl font-semibold text-foreground">Học sinh</h1>
+        <DailyNotesHeader />
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
@@ -250,7 +316,7 @@ export function StudentsListPage() {
             <button
               type="button"
               aria-pressed={pinnedOnly}
-              onClick={() => setPinnedOnly((value) => !value)}
+              onClick={() => setPinnedOnly(!pinnedOnly)}
               className={cn(
                 'inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition-colors',
                 pinnedOnly ? 'bg-amber-500 text-white' : 'bg-background text-muted-foreground hover:text-foreground'
@@ -334,7 +400,7 @@ export function StudentsListPage() {
               </thead>
               <tbody>
                 {visibleStudents.map((student) => {
-                  const hasOpenTodos = (student.todos ?? []).some((t: { done: boolean }) => !t.done);
+                  const urgency = todoUrgency(student.todos ?? []);
 
                   return (
                     <tr
@@ -370,7 +436,11 @@ export function StudentsListPage() {
                           title="Xem việc cần làm"
                           className={cn(
                             'inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 hover:bg-muted',
-                            hasOpenTodos ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
+                            urgency === 'due'
+                              ? 'bg-red-50 text-red-600 hover:text-red-700'
+                              : urgency === 'tomorrow'
+                                ? 'bg-amber-50 text-amber-600 hover:text-amber-700'
+                                : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
                           <ListChecks size={16} />
@@ -388,7 +458,7 @@ export function StudentsListPage() {
 
           <div className="space-y-3 md:hidden">
             {visibleStudents.map((student) => {
-              const hasOpenTodos = (student.todos ?? []).some((t: { done: boolean }) => !t.done);
+              const urgency = todoUrgency(student.todos ?? []);
 
               return (
                 <div
@@ -411,10 +481,14 @@ export function StudentsListPage() {
                       }}
                       className={cn(
                         'rounded-md border px-2 py-1 text-xs',
-                        hasOpenTodos ? 'border-red-200 bg-red-50 text-red-600' : 'border-border bg-background text-muted-foreground'
+                        urgency === 'due'
+                          ? 'border-red-300 bg-red-50 text-red-600'
+                          : urgency === 'tomorrow'
+                            ? 'border-amber-300 bg-amber-50 text-amber-700'
+                            : 'border-border bg-background text-muted-foreground'
                       )}
                     >
-                      {hasOpenTodos ? 'Cần làm' : 'Ổn'}
+                      {urgency === 'due' ? 'Đến hạn' : urgency === 'tomorrow' ? 'Còn 1 ngày' : urgency === 'open' ? 'Cần làm' : 'Ổn'}
                     </button>
                   </div>
 

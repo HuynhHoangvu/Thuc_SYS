@@ -32,12 +32,16 @@ export const studentApi = {
   async remove(id: string): Promise<void> {
     await api.delete(`/students/${id}`);
   },
-  async addTodo(studentId: string, text: string): Promise<Student> {
-    const res = await api.post<ItemResponse>(`/students/${studentId}/todos`, { text });
+  async addTodo(studentId: string, text: string, dueDate?: string): Promise<Student> {
+    const res = await api.post<ItemResponse>(`/students/${studentId}/todos`, { text, dueDate });
     return res.data.data;
   },
   async updateTodo(studentId: string, todoId: string, done: boolean): Promise<Student> {
     const res = await api.patch<ItemResponse>(`/students/${studentId}/todos/${todoId}`, { done });
+    return res.data.data;
+  },
+  async updateTodoDueDate(studentId: string, todoId: string, dueDate?: string): Promise<Student> {
+    const res = await api.patch<ItemResponse>(`/students/${studentId}/todos/${todoId}`, { dueDate: dueDate || null });
     return res.data.data;
   },
   async removeTodo(studentId: string, todoId: string): Promise<Student> {

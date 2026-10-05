@@ -15,6 +15,10 @@ function ymd(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+function vietnamDateKey(date: Date) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+}
+
 // Filtering, paging and the counts shown on the filter chips all run in MongoDB so the list
 // stays fast and complete however many students there are.
 export const GET = withErrorHandling(async (req) => {
@@ -47,6 +51,12 @@ export const GET = withErrorHandling(async (req) => {
   const where = { ...base, ...quick, ...pinned, ...country, ...stage };
 
   const stageKeys = (await StageTemplate.find({ type: 'student' }, { key: 1 }).sort({ order: 1 })).map((s) => s.key);
+  const today = vietnamDateKey(new Date());
+  const tomorrow = vietnamDateKey(new Date(Date.now() + DAY_MS));
+  const [dueTodoStudentIds, tomorrowTodoStudentIds] = await Promise.all([
+    Todo.distinct('studentId', { done: false, dueDate: { $gt: '', $lte: today } }) as Promise<string[]>,
+    Todo.distinct('studentId', { done: false, dueDate: tomorrow }) as Promise<string[]>,
+  ]);
 
   const sortSpec: Record<string, 1 | -1> =
     query.sort === 'updated'
@@ -57,14 +67,28 @@ export const GET = withErrorHandling(async (req) => {
           ? { fullName: -1 }
           : query.sort === 'visa'
             ? { _hasVisa: 1, visaExpiry: 1, fullName: 1 }
-            : { _pinned: 1, _stageIdx: 1, fullName: 1 };
+            : { _todoPriority: 1, _pinned: 1, _stageIdx: 1, fullName: 1 };
 
   const [items, total, countryRows, stageRows, dueCount] = await Promise.all([
     Student.aggregate([
       { $match: where },
       // Derived fields keep missing visa dates last and preserve the pipeline order sort.
       { $addFields: { _stageIdx: { $indexOfArray: [stageKeys, '$stage'] }, _hasVisa: { $cond: [{ $ne: ['$visaExpiry', null] }, 0, 1] } } },
-      { $addFields: { _stageIdx: { $cond: [{ $lt: ['$_stageIdx', 0] }, stageKeys.length, '$_stageIdx'] }, _pinned: { $cond: ['$pinned', 0, 1] } } },
+      {
+        $addFields: {
+          _stageIdx: { $cond: [{ $lt: ['$_stageIdx', 0] }, stageKeys.length, '$_stageIdx'] },
+          _pinned: { $cond: ['$pinned', 0, 1] },
+          _todoPriority: {
+            $switch: {
+              branches: [
+                { case: { $in: [{ $toString: '$_id' }, dueTodoStudentIds] }, then: 0 },
+                { case: { $in: [{ $toString: '$_id' }, tomorrowTodoStudentIds] }, then: 1 },
+              ],
+              default: 2,
+            },
+          },
+        },
+      },
       { $sort: sortSpec },
       { $skip: (page - 1) * limit },
       { $limit: limit },

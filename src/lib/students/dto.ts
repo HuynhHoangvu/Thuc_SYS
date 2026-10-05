@@ -243,7 +243,13 @@ export function toStudentDTO(student: StudentLike, todos: TodoDoc[] = []) {
     todos: (todos ?? [])
       .slice()
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      .map((t) => ({ id: String((t as TodoDoc & { _id: unknown })._id), text: t.text, done: t.done, createdAt: t.createdAt })),
+      .map((t) => ({
+        id: String((t as TodoDoc & { _id: unknown })._id),
+        text: t.text,
+        done: t.done,
+        dueDate: t.dueDate ?? undefined,
+        createdAt: t.createdAt,
+      })),
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
