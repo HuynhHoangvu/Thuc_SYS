@@ -30,6 +30,16 @@ const defaults = [
       ['[dd/mm/yyyy]', '{{ngayCapThu}}'],
     ],
   },
+  {
+    seedKey: 'interview-schedule',
+    file: 'thong-bao-lich-phong-van.html',
+    name: 'Thông báo lịch phỏng vấn',
+    replacements: [
+      ['Phan Anh Kiệt', '{{tenHocSinh}}'],
+      ['19/10/2026', '{{ngayPhongVan}}'],
+      ['10:30 sáng', '{{gioPhongVan}}'],
+    ],
+  },
 ];
 
 async function main() {

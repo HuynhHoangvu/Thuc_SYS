@@ -19,6 +19,8 @@ const previewFields = [
   { key: 'quocGia', label: 'Quốc gia', placeholder: 'Mỹ, Canada, Úc...' },
   { key: 'ngayTiepNhan', label: 'Ngày tiếp nhận', placeholder: '04/10/2026' },
   { key: 'ngayCapThu', label: 'Ngày cấp thư', placeholder: '04/10/2026' },
+  { key: 'ngayPhongVan', label: 'Ngày phỏng vấn', placeholder: '19/10/2026' },
+  { key: 'gioPhongVan', label: 'Giờ phỏng vấn', placeholder: '10:30 sáng' },
 ] as const;
 
 const blankTemplate: EmailTemplateInput = {
