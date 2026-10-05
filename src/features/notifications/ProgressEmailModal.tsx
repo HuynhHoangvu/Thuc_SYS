@@ -446,20 +446,18 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                 </div>
 
                 <div className="flex items-center justify-between border-t border-border pt-4">
-                  <span className="text-sm font-medium">{libraryTemplate ? `Mail sẽ gửi · mẫu “${libraryTemplate.name}”` : editing ? 'Sửa nội dung mẫu' : 'Mail sẽ gửi'}</span>
-                  {!libraryTemplate && (
+                  <span className="text-sm font-medium">{editing ? 'Sửa nội dung mẫu' : libraryTemplate ? `Mail sẽ gửi · mẫu “${libraryTemplate.name}”` : 'Mail sẽ gửi'}</span>
                   <button
                     onClick={() => setEditing((v) => !v)}
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     {editing ? 'Xem trước' : 'Sửa nội dung'}
                   </button>
-                  )}
                 </div>
               </div>
             )}
 
-            {template && editing && !libraryTemplate && (
+            {template && editing && (
               <div className="mt-3 flex flex-col gap-4">
                 <label className="flex flex-col gap-1 text-sm">
                   <span className="font-medium">Tiêu đề</span>
