@@ -55,7 +55,16 @@ function titleOf(html: string) {
   return html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || 'Mẫu email Catholic MTA';
 }
 
+// Signature logo is the emblem; earlier seeded copies still point at logo.png.
+const OLD_SIGNATURE_LOGO = '<img src="/email/logo.png" alt="Catholic MTA" width="180"';
+const NEW_SIGNATURE_LOGO = '<img src="/email/emblem.png" alt="Catholic MTA" width="180"';
+
 export async function ensureDefaultEmailTemplates() {
+  const stale = await EmailTemplate.find({ html: { $regex: 'logo\\.png" alt="Catholic MTA" width="180"' } });
+  for (const t of stale) {
+    t.html = t.html.replaceAll(OLD_SIGNATURE_LOGO, NEW_SIGNATURE_LOGO);
+    await t.save();
+  }
   for (const item of DEFAULTS) {
     if (await EmailTemplate.exists({ seedKey: item.seedKey })) continue;
     try {
