@@ -134,8 +134,8 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
   // reloaded when the HTML textarea changes, never from its own edits (that would reset the caret).
   const [seed, setSeed] = useState({ html: initial.html, rev: 0 });
   const frameRef = useRef<HTMLIFrameElement>(null);
-  // The frame is sandboxed without allow-scripts, and Chrome refuses to run event listeners inside such a
-  // document ("Blocked script execution"), so edits are picked up by polling instead of an input listener.
+  // No sandbox on this frame: Chrome blocks editing inside a sandboxed document without allow-scripts.
+  // Edits are picked up by polling.
   const pollRef = useRef<number>(0);
   function enableInlineEdit() {
     const doc = frameRef.current?.contentDocument;
@@ -191,7 +191,7 @@ ${clone.outerHTML}`;
           </button>
         </div>
         <div className={`${showPreview ? 'block' : 'hidden'} min-h-[520px] overflow-hidden rounded-xl border border-border bg-white lg:block`}>
-          <iframe key={seed.rev} ref={frameRef} onLoad={enableInlineEdit} title="Xem trước mẫu email" sandbox="allow-popups allow-same-origin" srcDoc={seed.html} className="h-full min-h-[520px] w-full" />
+          <iframe key={seed.rev} ref={frameRef} onLoad={enableInlineEdit} title="Xem trước mẫu email" srcDoc={seed.html} className="h-full min-h-[520px] w-full" />
         </div>
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
