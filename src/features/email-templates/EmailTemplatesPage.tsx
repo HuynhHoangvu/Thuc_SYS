@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
@@ -134,20 +134,31 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
   // reloaded when the HTML textarea changes, never from its own edits (that would reset the caret).
   const [seed, setSeed] = useState({ html: initial.html, rev: 0 });
   const frameRef = useRef<HTMLIFrameElement>(null);
+  // The frame is sandboxed without allow-scripts, and Chrome refuses to run event listeners inside such a
+  // document ("Blocked script execution"), so edits are picked up by polling instead of an input listener.
+  const pollRef = useRef<number>(0);
   function enableInlineEdit() {
     const doc = frameRef.current?.contentDocument;
     if (!doc?.body) return;
+    window.clearInterval(pollRef.current);
     doc.body.contentEditable = 'true';
     doc.body.style.outline = 'none';
-    doc.body.addEventListener('input', () => {
+    const serialize = () => {
       const clone = doc.documentElement.cloneNode(true) as HTMLElement;
       clone.querySelector('body')?.removeAttribute('contenteditable');
       clone.querySelector('body')?.removeAttribute('style');
-      const html = `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 ${clone.outerHTML}`;
+    };
+    let last = serialize();
+    pollRef.current = window.setInterval(() => {
+      const html = serialize();
+      if (html === last) return;
+      last = html;
       setForm((f) => ({ ...f, html }));
-    });
+    }, 400);
   }
+  useEffect(() => () => window.clearInterval(pollRef.current), []);
   const mutation = useMutation({
     mutationFn: () => template === 'new' ? emailTemplateApi.create(form) : emailTemplateApi.update(template.id, form),
     onSuccess: async () => {
