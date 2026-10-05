@@ -207,7 +207,18 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
   const renderedHtml = useMemo(() => template ? fillVariables(template.html, values) : '', [template, values]);
   const renderedSubject = useMemo(() => template ? fillTextVariables(template.subject, values) : '', [template, values]);
 
+  // Fields this template actually uses, and those still empty (copying with {{...}} left in is a mistake).
+  const usedFields = useMemo(() => {
+    const text = template ? `${template.subject} ${template.html}` : '';
+    return previewFields.filter((f) => text.includes(`{{${f.key}}}`));
+  }, [template]);
+  const emptyFields = usedFields.filter((f) => !values[f.key]?.trim());
+
   async function copyEmail() {
+    if (emptyFields.length) {
+      onNotice(`Chưa điền: ${emptyFields.map((f) => f.label).join(', ')}.`);
+      return;
+    }
     setCopying(true);
     try {
       const plain = toPlainText(renderedHtml);
@@ -240,7 +251,7 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
             </div>
             <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[310px_1fr]">
               <div className="space-y-3 border-b border-border p-5 lg:border-b-0 lg:border-r">
-                {previewFields.map((field) => (
+                {usedFields.map((field) => (
                   <label key={field.key} className="block text-sm font-medium">{field.label}
                     <input className={`${inputClass} mt-1`} placeholder={field.placeholder} value={values[field.key] ?? ''} onChange={(e) => setValues({ ...values, [field.key]: e.target.value })} />
                   </label>
