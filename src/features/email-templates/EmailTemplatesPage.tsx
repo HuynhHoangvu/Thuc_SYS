@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Copy, FilePlus2, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { Copy, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { emailTemplateApi } from './email-template.api';
 import type { EmailTemplate, EmailTemplateInput } from './email-template.types';
 import { fillLibraryText } from '@/lib/email-templates/stage-library';
@@ -54,12 +54,6 @@ export function EmailTemplatesPage() {
     await deleteMutation.mutateAsync(template.id);
   }
 
-  async function duplicate(template: EmailTemplate) {
-    await emailTemplateApi.create({ name: `${template.name} (bản sao)`, subject: template.subject, html: template.html });
-    await queryClient.invalidateQueries({ queryKey: ['email-templates'] });
-    setNotice('Đã tạo một bản sao để bạn chỉnh sửa.');
-  }
-
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -102,9 +96,6 @@ export function EmailTemplatesPage() {
               </button>
               <button onClick={() => setEditing(template)} className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted">
                 <Pencil size={14} /> Chỉnh sửa
-              </button>
-              <button onClick={() => duplicate(template)} className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted">
-                <FilePlus2 size={14} /> Nhân bản
               </button>
               {!template.isBuiltIn && (
                 <button onClick={() => remove(template)} className="ml-auto flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50">

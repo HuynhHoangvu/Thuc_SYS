@@ -18,7 +18,7 @@ When staff move a student to a later stage, a popup prefills the stage's email; 
 
 ## Reusable email library
 
-The separate `/email-templates` dashboard page is a general-purpose library for staff to store, edit, preview, duplicate and copy complete HTML emails into Gmail or Outlook. It does not send mail through Resend and does not replace the stage-progress email flow above.
+The separate `/email-templates` dashboard page is a general-purpose library for staff to store, edit, preview and copy complete HTML emails into Gmail or Outlook. It does not send mail through Resend and does not replace the stage-progress email flow above.
 
 - Mongo model: `src/models/EmailTemplate.ts`
 - CRUD API: `src/app/api/email-templates`
@@ -26,7 +26,7 @@ The separate `/email-templates` dashboard page is a general-purpose library for 
 - Original HTML sources: `email-templates/*.html`
 - On the first API read, `src/lib/email-templates/defaults.ts` imports the two original files and replaces their example data with editable placeholders.
 - Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{quocGia}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`. In the thank-you template, the service is rendered as `Hồ sơ du học {{quocGia}}` rather than being fixed to Mỹ.
-- Built-in templates can be edited or duplicated but not deleted. User-created templates can be deleted.
+- Built-in templates can be edited but not deleted. User-created templates can be deleted.
 
 ## Library templates in the popup
 
