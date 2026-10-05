@@ -40,6 +40,12 @@ const defaults = [
       ['10:30 sáng', '{{gioPhongVan}}'],
     ],
   },
+  {
+    seedKey: 'practice-schedule',
+    file: 'thong-bao-lich-luyen-tap-phong-van.html',
+    name: 'Lịch luyện tập phỏng vấn nội bộ 1-1',
+    replacements: [],
+  },
 ];
 
 async function main() {
