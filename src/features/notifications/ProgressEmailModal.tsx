@@ -235,6 +235,8 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
     const used = libraryTemplate
       ? new Set(findMissingVars(libTexts, {}).map((k) => LIBRARY_FIELD_SOURCE[k] ?? k))
       : new Set(findMissingVars([subject, body], {}));
+    // Parent name is optional so it is never reported missing, but the field must still be offered.
+    if ((libraryTemplate ? libTexts : [subject, body]).some((t) => /\{\{\s*tenPhuHuynh\s*\}\}/.test(t))) used.add('tenPhuHuynh');
     return NOTIFY_FIELDS.filter((f) => used.has(f.key));
   }, [subject, body, libraryTemplate, libTexts]);
 
