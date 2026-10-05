@@ -48,11 +48,27 @@ function copyViaSelection(html: string) {
   if (!ok) throw new Error('Trình duyệt chặn copy. Hãy thử lại hoặc dùng Chrome/Edge.');
 }
 
+// Outlook's paste filter drops "color" set in style="" on divs, cells and links, so text on the dark
+// footer turns black. A <font color> wrapper survives, so mirror every inline text colour onto one.
+function outlookSafe(html: string) {
+  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+  doc.body.querySelectorAll<HTMLElement>('[style*="color"]').forEach((el) => {
+    const color = el.style.color;
+    if (!color || !el.firstChild || el.tagName === 'TABLE' || el.tagName === 'TR' || el.tagName === 'IMG') return;
+    if (el.firstElementChild?.tagName === 'FONT' && el.children.length === 1) return;
+    const font = doc.createElement('font');
+    font.setAttribute('color', color);
+    while (el.firstChild) font.appendChild(el.firstChild);
+    el.appendChild(font);
+  });
+  return doc.body.innerHTML;
+}
+
 // Rich copy: paste keeps colours, layout and images. Plain text is the fallback flavour.
 // Must be called directly from the click handler: browsers only allow clipboard writes during
 // the user gesture, so the write starts immediately with *promised* blobs (images load after).
 export async function copyEmailHtml(html: string, text: string) {
-  const richPromise = inlineImages(bodyOnly(html));
+  const richPromise = inlineImages(bodyOnly(html)).then(outlookSafe);
   if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write && window.isSecureContext) {
     try {
       await navigator.clipboard.write([
