@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, FilePlus2, Mail, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
@@ -139,6 +139,24 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
   const initial = template === 'new' ? blankTemplate : template;
   const [form, setForm] = useState<EmailTemplateInput>({ name: initial.name, subject: initial.subject, html: initial.html });
   const [showPreview, setShowPreview] = useState(false);
+  // The preview iframe is edited in place (click text, type). Its document is the live editor, so it is only
+  // reloaded when the HTML textarea changes, never from its own edits (that would reset the caret).
+  const [seed, setSeed] = useState({ html: initial.html, rev: 0 });
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  function enableInlineEdit() {
+    const doc = frameRef.current?.contentDocument;
+    if (!doc?.body) return;
+    doc.body.contentEditable = 'true';
+    doc.body.style.outline = 'none';
+    doc.body.addEventListener('input', () => {
+      const clone = doc.documentElement.cloneNode(true) as HTMLElement;
+      clone.querySelector('body')?.removeAttribute('contenteditable');
+      clone.querySelector('body')?.removeAttribute('style');
+      const html = `<!DOCTYPE html>
+${clone.outerHTML}`;
+      setForm((f) => ({ ...f, html }));
+    });
+  }
   const mutation = useMutation({
     mutationFn: () => template === 'new' ? emailTemplateApi.create(form) : emailTemplateApi.update(template.id, form),
     onSuccess: async () => {
@@ -162,15 +180,16 @@ function EditorForm({ template, onClose }: { template: EmailTemplate | 'new'; on
             <input className={`${inputClass} mt-1`} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
           </label>
           <label className="flex min-h-[360px] flex-1 flex-col text-sm font-medium">Mã HTML
-            <textarea className={`${inputClass} mt-1 min-h-[360px] flex-1 resize-y font-mono text-xs leading-relaxed`} value={form.html} onChange={(e) => setForm({ ...form, html: e.target.value })} />
+            <textarea className={`${inputClass} mt-1 min-h-[360px] flex-1 resize-y font-mono text-xs leading-relaxed`} value={form.html} onChange={(e) => { setForm({ ...form, html: e.target.value }); setSeed((v) => ({ html: e.target.value, rev: v.rev + 1 })); }} />
           </label>
+          <p className="text-xs text-muted-foreground">Mẹo: bấm thẳng vào chữ trong khung xem trước bên phải để sửa nội dung.</p>
           <p className="text-xs text-muted-foreground">Có thể dùng biến: {previewFields.map((field) => `{{${field.key}}}`).join(', ')}</p>
           <button onClick={() => setShowPreview((value) => !value)} className="self-start text-sm font-medium text-primary hover:underline lg:hidden">
             {showPreview ? 'Ẩn xem trước' : 'Xem trước'}
           </button>
         </div>
         <div className={`${showPreview ? 'block' : 'hidden'} min-h-[520px] overflow-hidden rounded-xl border border-border bg-white lg:block`}>
-          <iframe title="Xem trước mẫu email" sandbox="allow-popups" srcDoc={form.html} className="h-full min-h-[520px] w-full" />
+          <iframe key={seed.rev} ref={frameRef} onLoad={enableInlineEdit} title="Xem trước mẫu email" sandbox="allow-popups allow-same-origin" srcDoc={seed.html} className="h-full min-h-[520px] w-full" />
         </div>
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
