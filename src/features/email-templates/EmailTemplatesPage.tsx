@@ -191,7 +191,7 @@ ${clone.outerHTML}`;
           </button>
         </div>
         <div className={`${showPreview ? 'block' : 'hidden'} min-h-[520px] overflow-hidden rounded-xl border border-border bg-white lg:block`}>
-          <iframe key={seed.rev} ref={frameRef} onLoad={enableInlineEdit} title="Xem trước mẫu email" sandbox="allow-popups allow-same-origin allow-scripts" srcDoc={seed.html} className="h-full min-h-[520px] w-full" />
+          <iframe key={seed.rev} ref={frameRef} onLoad={enableInlineEdit} title="Xem trước mẫu email" sandbox="allow-popups allow-same-origin" srcDoc={seed.html} className="h-full min-h-[520px] w-full" />
         </div>
       </div>
       <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
