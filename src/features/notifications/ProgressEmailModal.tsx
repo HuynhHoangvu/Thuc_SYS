@@ -84,6 +84,54 @@ interface ProgressEmailModalProps {
   onClose: () => void;
 }
 
+// Edits an email's HTML directly on its rendered preview, so staff never see markup.
+function VisualEmailEditor({ initialHtml, onChange }: { initialHtml: string; onChange: (html: string) => void }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+
+  function setup() {
+    const doc = frame.current?.contentDocument;
+    if (!doc) return;
+    doc.designMode = 'on';
+    doc.addEventListener('input', () => onChange(`<!DOCTYPE html>
+${doc.documentElement.outerHTML}`));
+  }
+
+  function format(command: 'bold' | 'italic' | 'underline') {
+    const doc = frame.current?.contentDocument;
+    if (!doc) return;
+    frame.current?.contentWindow?.focus();
+    doc.execCommand(command);
+    onChange(`<!DOCTYPE html>
+${doc.documentElement.outerHTML}`);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-1">
+        {([['bold', 'B', 'font-bold'], ['italic', 'I', 'italic'], ['underline', 'U', 'underline']] as const).map(
+          ([cmd, label, cls]) => (
+            <button
+              key={cmd}
+              type="button"
+              onClick={() => format(cmd)}
+              className={cn('h-8 w-8 rounded-md border border-border text-sm hover:bg-muted', cls)}
+            >
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+      <iframe
+        ref={frame}
+        title="Sửa nội dung mail"
+        srcDoc={initialHtml}
+        onLoad={setup}
+        className="h-[60vh] w-full rounded-md border border-border bg-white"
+      />
+    </div>
+  );
+}
+
 export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEmailModalProps) {
   const open = Boolean(studentId && stageKey);
 
@@ -115,6 +163,8 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
   // One-off edits of the library template text; null = use the saved template.
   const [libSubjectEdit, setLibSubjectEdit] = useState<string | null>(null);
   const [libHtmlEdit, setLibHtmlEdit] = useState<string | null>(null);
+  // Template HTML the visual editor was opened with; changing it remounts the editor frame.
+  const [editorSeed, setEditorSeed] = useState('');
   const initializedFor = useRef<string | null>(null);
 
   // Prefill once per (student, stage) when data arrives.
@@ -462,6 +512,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                         onClick={() => {
                           setLibSubjectEdit(null);
                           setLibHtmlEdit(null);
+                          setEditorSeed(libraryTemplate.html);
                         }}
                         className="text-sm text-muted-foreground hover:text-foreground"
                       >
@@ -469,7 +520,10 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                       </button>
                     )}
                     <button
-                      onClick={() => setEditing((v) => !v)}
+                      onClick={() => {
+                        if (!editing) setEditorSeed(libHtml);
+                        setEditing((v) => !v);
+                      }}
                       className="text-sm font-medium text-primary hover:underline"
                     >
                       {editing ? 'Xem trước' : 'Sửa nội dung'}
@@ -508,19 +562,14 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                   <span className="font-medium">Tiêu đề</span>
                   <input value={libSubject} onChange={(e) => setLibSubjectEdit(e.target.value)} className={inputClass} />
                 </label>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="font-medium">Nội dung (HTML)</span>
-                  <textarea
-                    value={libHtml}
-                    onChange={(e) => setLibHtmlEdit(e.target.value)}
-                    rows={16}
-                    className={cn(inputClass, 'font-mono text-xs leading-relaxed')}
-                  />
+                <div className="flex flex-col gap-1 text-sm">
+                  <span className="font-medium">Nội dung</span>
+                  <VisualEmailEditor key={editorSeed} initialHtml={editorSeed} onChange={setLibHtmlEdit} />
                   <span className="text-xs text-muted-foreground">
-                    Chỉ sửa chữ, giữ nguyên các thẻ HTML và các chữ dạng {'{{tenHocSinh}}'} (tự thay bằng thông tin học
-                    sinh). Chỉnh sửa chỉ áp dụng cho lần gửi này, không đổi mẫu gốc.
+                    Bấm vào chữ trong thư để sửa như Word. Các chữ dạng {'{{tenHocSinh}}'} sẽ tự thay bằng thông tin
+                    học sinh khi gửi — đừng xóa. Chỉnh sửa chỉ áp dụng cho lần gửi này, không đổi mẫu gốc.
                   </span>
-                </label>
+                </div>
               </div>
             )}
 
