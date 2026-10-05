@@ -23,6 +23,8 @@ export interface StudentNotificationInput {
   body: string;
   kind?: 'stage' | 'interview_reminder';
   refValue?: string;
+  templateSubject?: string;
+  templateHtml?: string;
 }
 
 // Gives the student a case code and unsubscribe token the first time they are emailed.
@@ -82,10 +84,12 @@ export async function sendStudentNotification(student: StudentDocument, input: S
   let text: string;
   if (library) {
     const values = libraryValues(vars);
-    const missing = missingLibraryValues([library.subject, library.html], values);
+    const librarySubject = input.templateSubject ?? library.subject;
+    const libraryHtml = input.templateHtml ?? library.html;
+    const missing = missingLibraryValues([librarySubject, libraryHtml], values);
     if (missing.length) throw new BadRequestError(`Còn thiếu thông tin: ${missing.join(', ')}`);
-    subject = fillLibraryText(library.subject, values);
-    html = fillLibraryText(library.html, values, true);
+    subject = fillLibraryText(librarySubject, values);
+    html = fillLibraryText(libraryHtml, values, true);
     body = text = libraryHtmlToText(html);
   } else {
     const missing = findMissingVars([input.subject, input.body], vars);

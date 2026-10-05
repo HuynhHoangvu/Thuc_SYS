@@ -14,6 +14,9 @@ const sendSchema = z.object({
   subject: z.string().min(1),
   body: z.string().default(''),
   notifyInfo: z.record(z.string(), z.string()).default({}),
+  // One-off edits of a library template's text (placeholders kept); the saved template is not changed.
+  templateSubject: z.string().min(1).optional(),
+  templateHtml: z.string().min(1).optional(),
 });
 
 function toLogDTO(log: InstanceType<typeof NotificationLog>) {

@@ -21,6 +21,8 @@ export interface SendNotificationInput {
   subject: string;
   body: string;
   notifyInfo: Record<string, string>;
+  templateSubject?: string;
+  templateHtml?: string;
 }
 
 export const notificationApi = {
