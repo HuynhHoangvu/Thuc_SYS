@@ -59,10 +59,17 @@ function titleOf(html: string) {
 const OLD_SIGNATURE_LOGO = '<img src="/email/logo.png" alt="Catholic MTA" width="180"';
 const NEW_SIGNATURE_LOGO = '<img src="/email/emblem.png" alt="Catholic MTA" width="180"';
 
+// Gmail auto-links "Hoa Kỳ:" as a map address in default blue; an explicit link keeps the orange label.
+const OLD_US_LABEL = '<strong style="color:#f39422;">Hoa Kỳ:</strong>';
+const NEW_US_LABEL =
+  '<strong><a href="https://www.google.com/maps/search/?api=1&amp;query=8107+Bolsa+Ave%2C+Midway+City%2C+CA+92655" target="_blank" style="color:#f39422;text-decoration:none;">Hoa Kỳ:</a></strong>';
+
 export async function ensureDefaultEmailTemplates() {
-  const stale = await EmailTemplate.find({ html: { $regex: 'logo\\.png" alt="Catholic MTA" width="180"' } });
+  const stale = await EmailTemplate.find({
+    $or: [{ html: { $regex: 'logo\\.png" alt="Catholic MTA" width="180"' } }, { html: { $regex: 'color:#f39422;">Hoa Kỳ:' } }],
+  });
   for (const t of stale) {
-    t.html = t.html.replaceAll(OLD_SIGNATURE_LOGO, NEW_SIGNATURE_LOGO);
+    t.html = t.html.replaceAll(OLD_SIGNATURE_LOGO, NEW_SIGNATURE_LOGO).replaceAll(OLD_US_LABEL, NEW_US_LABEL);
     await t.save();
   }
   for (const item of DEFAULTS) {
