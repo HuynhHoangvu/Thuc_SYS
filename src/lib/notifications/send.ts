@@ -76,6 +76,10 @@ export async function sendStudentNotification(student: StudentDocument, input: S
   const libraryKey = input.kind === 'interview_reminder' ? undefined : STAGE_LIBRARY_KEY[presetKey ?? ''];
   const library = libraryKey ? await EmailTemplate.findOne({ seedKey: libraryKey }) : null;
 
+  if (!library && input.kind !== 'interview_reminder') {
+    throw new BadRequestError('Giai đoạn này chưa có mẫu email trong thư viện');
+  }
+
   let subject: string;
   let body: string;
   let html: string;
