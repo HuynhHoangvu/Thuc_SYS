@@ -261,6 +261,17 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
     },
   });
 
+  // Staff-entered details (parent name, dates…) are saved to the profile as soon as a field is left,
+  // so they are there next time even if the mail is copied by hand instead of sent.
+  const infoMutation = useMutation({
+    mutationFn: (values: Record<string, string>) => studentApi.update(studentId as string, { notifyInfo: values }),
+    onSuccess: (updated) => queryClient.setQueryData(['student', studentId], updated),
+  });
+  function saveField(key: string) {
+    const value = (info[key] ?? '').trim();
+    if (value && value !== (student?.notifyInfo?.[key] ?? '')) infoMutation.mutate({ [key]: value });
+  }
+
   // Manual fallback: copy subject / formatted body to paste into Gmail or Outlook.
   const [copied, setCopied] = useState<'subject' | 'body' | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -425,6 +436,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                         type={f.type}
                         value={info[f.key] ?? ''}
                         onChange={(e) => setInfo((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                        onBlur={() => saveField(f.key)}
                         className={cn(inputClass, missing.includes(f.key) && 'ring-2 ring-red-300')}
                       />
                     </label>
