@@ -16,6 +16,7 @@ interface ProfileTabProps {
 
 type FormValues = {
   fullName: string;
+  caseCode: string;
   email: string;
   emailPassword: string;
   personalEmail: string;
@@ -42,6 +43,7 @@ type FormValues = {
 function toFormValues(student: Student): FormValues {
   return {
     fullName: student.personal.fullName ?? '',
+    caseCode: student.caseCode ?? '',
     email: student.personal.email ?? '',
     emailPassword: student.personal.emailPassword ?? '',
     personalEmail: student.personal.personalEmail ?? '',
@@ -123,6 +125,7 @@ export function ProfileTab({ student, onDirtyChange, saveRef }: ProfileTabProps)
         visaIssuedDate: values.visaIssuedDate || undefined,
         visaExpiry: values.visaExpiry || undefined,
       },
+      caseCode: values.caseCode || undefined,
       notifyInfo: values.notifyInfo,
     });
     // Mark the just-saved values as the new baseline before a guarded tab switch/close.
@@ -159,6 +162,10 @@ export function ProfileTab({ student, onDirtyChange, saveRef }: ProfileTabProps)
           <div>
             <label className={labelClass}>Họ tên</label>
             <input {...register('fullName')} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Mã hồ sơ</label>
+            <input {...register('caseCode')} placeholder="VD: MTA-2026-0001" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Email cá nhân (nhận mail cập nhật)</label>

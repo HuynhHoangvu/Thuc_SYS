@@ -8,6 +8,7 @@ import { SendFailedError, sendStudentNotification } from '@/lib/notifications/se
 
 const sendSchema = z.object({
   stageKey: z.string().min(1),
+  caseCode: z.string().trim().max(80).optional(),
   to: z.string().email(),
   cc: z.array(z.string().email()).default([]),
   subject: z.string().min(1),
@@ -49,6 +50,7 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
   for (const [key, value] of Object.entries(input.notifyInfo)) {
     student.notifyInfo.set(key, value);
   }
+  if (input.caseCode !== undefined) student.caseCode = input.caseCode || undefined;
   await student.save();
 
   try {

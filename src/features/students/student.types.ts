@@ -99,5 +99,6 @@ export interface UpdateStudentInput {
   stage?: StudentStage;
   notes?: string;
   pinned?: boolean;
+  caseCode?: string;
   notifyInfo?: Record<string, string>;
 }

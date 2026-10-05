@@ -68,6 +68,7 @@ export const updateStudentSchema = z.object({
   stage: z.string().min(1).optional(),
   notes: z.string().optional(),
   pinned: z.boolean().optional(),
+  caseCode: z.string().trim().max(80).optional(),
 });
 
 export const listStudentsQuerySchema = z.object({
@@ -176,6 +177,7 @@ export function toUpdateData(input: UpdateStudentInput) {
   if (input.stage !== undefined) data.stage = input.stage;
   if (input.notes !== undefined) data.notes = input.notes;
   if (input.pinned !== undefined) data.pinned = input.pinned;
+  if (input.caseCode !== undefined) data.caseCode = input.caseCode.trim() || undefined;
   for (const [key, value] of Object.entries(input.notifyInfo ?? {})) {
     data[`notifyInfo.${key}`] = value.trim();
   }

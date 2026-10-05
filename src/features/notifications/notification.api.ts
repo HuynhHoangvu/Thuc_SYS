@@ -15,6 +15,7 @@ export interface NotificationLog {
 
 export interface SendNotificationInput {
   stageKey: string;
+  caseCode?: string;
   to: string;
   cc: string[];
   subject: string;

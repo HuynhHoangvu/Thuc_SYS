@@ -98,6 +98,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
   const [to, setTo] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [caseCode, setCaseCode] = useState('');
   const [info, setInfo] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState(false);
   const initializedFor = useRef<string | null>(null);
@@ -117,6 +118,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
     const text = resolveTemplate(template.presetKey, student.studyAbroad.destinationCountry, template);
     setSubject(text.subject);
     setBody(text.body);
+    setCaseCode(student.caseCode ?? '');
     const today = toDateInputValue(new Date());
     // The event that defines this stage (contract signed, file submitted, I-20 issued) usually happened today.
     const isUs = (countryKey(student.studyAbroad.destinationCountry) ?? 'USA') === 'USA';
@@ -144,14 +146,14 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
         ...info,
         quocGia: countryLabel(country),
         truong: student?.studyAbroad.preferredUniversities?.[0] ?? '',
-        maHoSo: student?.caseCode ?? '',
+        maHoSo: caseCode,
         tenHocSinh: student?.personal.fullName ?? '',
         tenHocSinhHoa: (student?.personal.fullName ?? '').toLocaleUpperCase('vi-VN'),
         ngayGui: toDateInputValue(new Date()),
         tenGoi: student?.personal.fullName.trim().split(/\s+/).pop() ?? '',
       };
     },
-    [info, student],
+    [info, student, caseCode],
   );
 
   // Only ask for the fields this template actually uses (+ parent CC).
@@ -174,11 +176,10 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
         heading:
           letterLabels(template?.presetKey).heading ??
           headingFromStageTitle(stage?.title, student?.studyAbroad.destinationCountry),
-        caseCode: student?.caseCode,
+        caseCode: caseCode || 'Chưa cấp',
         info: buildInfoRows(vars, student?.studyAbroad.destinationCountry),
       }),
-     
-    [subject, body, vars, stages, stageKey, stage, student, template],
+    [subject, body, vars, stages, stageKey, stage, student, template, caseCode],
   );
 
   const queryClient = useQueryClient();
@@ -221,6 +222,15 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
     if (country) countryMutation.mutate(country);
   }
 
+  const caseCodeMutation = useMutation({
+    mutationFn: (value: string) => studentApi.update(studentId as string, { caseCode: value }),
+    onSuccess: (updated) => {
+      setCaseCode(updated.caseCode ?? '');
+      queryClient.setQueryData(['student', studentId], updated);
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  });
+
   // Manual fallback: copy subject / formatted body to paste into Gmail or Outlook.
   const [copied, setCopied] = useState<'subject' | 'body' | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -243,6 +253,7 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
       studentId as string,
       {
         stageKey: stageKey as string,
+        caseCode: caseCode.trim() || undefined,
         to,
         cc: [],
         subject,
@@ -317,6 +328,20 @@ export function ProgressEmailModal({ studentId, stageKey, onClose }: ProgressEma
                 </label>
 
                 <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="font-medium">Mã hồ sơ</span>
+                    <input
+                      value={caseCode}
+                      onChange={(e) => setCaseCode(e.target.value)}
+                      onBlur={() => {
+                        if (student && caseCode.trim() !== (student.caseCode ?? '')) caseCodeMutation.mutate(caseCode.trim());
+                      }}
+                      placeholder="Tự sinh khi gửi lần đầu hoặc nhập tại đây"
+                      disabled={caseCodeMutation.isPending}
+                      className={inputClass}
+                    />
+                    <span className="text-xs text-muted-foreground">Đồng bộ với tab Hồ sơ và hiển thị trên đầu email.</span>
+                  </label>
                   <label className="flex flex-col gap-1 text-sm">
                     <span className="font-medium">Quốc gia du học</span>
                     <select
