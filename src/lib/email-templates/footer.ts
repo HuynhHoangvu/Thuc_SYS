@@ -24,11 +24,11 @@ export const FOOTER_CSS = `${CSS_MARK}
     .ft-soc { width:16px !important; }
   }
   @media only screen and (max-width:440px) {
-    .ft-head { font-size:5.2px !important; letter-spacing:0 !important; }
-    .ft-txt { font-size:4.8px !important; line-height:9px !important; }
+    .ft-head { font-size:6.5px !important; letter-spacing:0 !important; white-space:normal !important; }
+    .ft-txt { font-size:6.5px !important; line-height:11px !important; white-space:normal !important; }
     .ft-sm { font-size:5px !important; }
-    .ft-ico { width:6px !important; height:6px !important; }
-    .ft-soc { width:12px !important; }
+    .ft-ico { width:8px !important; height:8px !important; }
+    .ft-soc { width:16px !important; }
   }`;
 
 const FONT = 'font-family:Arial,Helvetica,sans-serif;';
@@ -101,7 +101,6 @@ export const EMAIL_FOOTER = `${FOOTER_START}
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td align="center" class="ft-head" style="${FONT}font-size:9.5px;line-height:15px;font-weight:bold;color:${WHITE};letter-spacing:0.4px;padding-bottom:9px;text-align:center;white-space:nowrap;">HÃY KẾT NỐI CÙNG CHÚNG TÔI</td></tr>
         <tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${socialCells}</tr></table></td></tr>
-        <tr><td align="center" class="ft-sm" style="${FONT}font-size:8px;line-height:13px;color:${WHITE};padding-top:9px;text-align:center;white-space:nowrap;">${SOCIALS.map(([n]) => n).join(' · ')}</td></tr>
       </table>
     </td>
   </tr></table>

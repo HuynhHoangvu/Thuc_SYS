@@ -77,6 +77,13 @@ const OLD_US_LABEL = '<strong style="color:#f39422;">Hoa Kỳ:</strong>';
 const NEW_US_LABEL =
   '<strong><a href="https://www.google.com/maps/search/?api=1&amp;query=8107+Bolsa+Ave%2C+Midway+City%2C+CA+92655" target="_blank" style="color:#f39422;text-decoration:none;">Hoa Kỳ:</a></strong>';
 
+// Signature emblem was 160px wide; the lighter 130px size is idempotent (copies already resized are untouched).
+function shrinkSignatureEmblem(html: string) {
+  return html.replace(/<img src="\/email\/emblem\.png"[^>]*>/g, (tag) =>
+    tag.replace('width="160"', 'width="130"').replace('height="127"', 'height="103"').replace('width:160px', 'width:130px').replace('max-width:160px', 'max-width:130px')
+  );
+}
+
 export async function ensureDefaultEmailTemplates() {
   const stale = await EmailTemplate.find({
     $or: [{ html: { $regex: 'logo\\.png" alt="Catholic MTA" width="180"' } }, { html: { $regex: 'color:#f39422;">Hoa Kỳ:' } }],
@@ -89,8 +96,9 @@ export async function ensureDefaultEmailTemplates() {
   // Roll the shared footer out to stored built-in copies (idempotent: copies that already carry it are skipped).
   for (const t of await EmailTemplate.find({ seedKey: { $exists: true, $ne: null } })) {
     const upgraded = upgradeFooter(t.html);
-    if (upgraded.changed) {
-      t.html = upgraded.html;
+    const resized = shrinkSignatureEmblem(upgraded.html);
+    if (upgraded.changed || resized !== upgraded.html) {
+      t.html = resized;
       await t.save();
     }
   }
