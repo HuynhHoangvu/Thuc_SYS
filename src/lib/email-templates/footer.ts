@@ -40,13 +40,13 @@ const mapUrl = (query: string) => `https://www.google.com/maps/search/?api=1&amp
 function contact(icon: string, w: number, h: number, alt: string, inner: string) {
   return `<tr>
             <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img class="ft-ico" src="/email/${icon}.png" width="${w}" height="${h}" alt="${alt}" style="display:block;width:${w}px;height:${h}px;border:0;"></td>
-            <td class="ft-txt" valign="middle" style="${FONT}font-size:8.5px;line-height:14px;color:${WHITE};padding:3px 0;white-space:nowrap;">${inner}</td>
+            <td class="ft-txt" valign="middle" style="${FONT}font-size:9px;line-height:14px;color:${WHITE};padding:3px 0;white-space:nowrap;">${inner}</td>
           </tr>`;
 }
 
 function office(label: string, address: string, query: string) {
   const href = mapUrl(query);
-  return `<tr><td class="ft-txt" style="${FONT}font-size:8.5px;line-height:14px;color:${WHITE};padding:3px 14px 3px 0;white-space:nowrap;"><a href="${href}" target="_blank" style="color:${ORANGE};font-weight:bold;text-decoration:none;">${label}:</a> <a href="${href}" target="_blank" style="color:${WHITE};text-decoration:none;">${address}</a></td></tr>`;
+  return `<tr><td class="ft-txt" style="${FONT}font-size:9px;line-height:14px;color:${WHITE};padding:3px 14px 3px 0;white-space:nowrap;"><a href="${href}" target="_blank" style="color:${ORANGE};font-weight:bold;text-decoration:none;">${label}:</a> <a href="${href}" target="_blank" style="color:${WHITE};text-decoration:none;">${address}</a></td></tr>`;
 }
 
 const SOCIALS: [string, string, string][] = [
@@ -74,7 +74,7 @@ const FOOTER_STRIP = `<!--FOOTER-STRIP--><tr><td>
 export const EMAIL_FOOTER = `${FOOTER_START}
 <tr><td bgcolor="#002B66" style="background-color:#002B66;padding:16px 12px 13px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td valign="top" width="60%" style="padding-right:3%;">
+    <td valign="top" width="66%" style="padding-right:3%;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td class="ft-head" style="${FONT}font-size:10.5px;line-height:15px;font-weight:bold;color:${WHITE};letter-spacing:0.4px;padding:0 0 9px 1px;white-space:nowrap;">CÔNG TY TNHH TƯ VẤN DU HỌC CATHOLIC MTA</td></tr>
         <tr><td>
@@ -82,8 +82,8 @@ export const EMAIL_FOOTER = `${FOOTER_START}
             <td valign="top" style="padding-right:8px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
           ${contact('ft-phone', 13, 13, 'Điện thoại', `<a href="tel:+84909451822" style="color:${WHITE};text-decoration:none;">${nb('0909 451 822')}</a> – <a href="tel:+84902968652" style="color:${WHITE};text-decoration:none;">${nb('0902 968 652')}</a>`)}
-          ${contact('ft-mail', 13, 11, 'Email', `<a href="mailto:info@mtacorporation.com" style="color:${WHITE};text-decoration:none;">info@mtacorporation.com</a>`)}
-          ${contact('ft-web', 13, 13, 'Website', `<a href="https://catholicmta.edu.vn" target="_blank" style="color:${WHITE};text-decoration:none;">catholicmta.edu.vn</a>`)}
+          ${contact('ft-mail', 13, 11, 'Email', `<a href="mailto:info@mtacorporation.com" style="color:${WHITE};text-decoration:underline;">info@mtacorporation.com</a>`)}
+          ${contact('ft-web', 13, 13, 'Website', `<a href="https://catholicmta.edu.vn" target="_blank" style="color:${WHITE};text-decoration:underline;">catholicmta.edu.vn</a>`)}
               </table>
             </td>
             <td valign="top" width="100%">
@@ -97,11 +97,11 @@ export const EMAIL_FOOTER = `${FOOTER_START}
         </td></tr>
       </table>
     </td>
-    <td valign="top" width="40%" align="center" style="border-left:1px solid #3A5A8C;padding-left:3%;text-align:center;">
+    <td valign="top" width="34%" align="center" style="border-left:1px solid #3A5A8C;padding-left:3%;text-align:center;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td align="center" class="ft-head" style="${FONT}font-size:9.5px;line-height:15px;font-weight:bold;color:${WHITE};letter-spacing:0.4px;padding-bottom:9px;text-align:center;white-space:nowrap;">HÃY KẾT NỐI CÙNG CHÚNG TÔI</td></tr>
         <tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${socialCells}</tr></table></td></tr>
-        <tr><td align="center" class="ft-sm" style="${FONT}font-size:9px;line-height:13px;color:${WHITE};padding-top:9px;text-align:center;white-space:nowrap;">${SOCIALS.map(([n]) => n).join(' · ')}</td></tr>
+        <tr><td align="center" class="ft-sm" style="${FONT}font-size:8px;line-height:13px;color:${WHITE};padding-top:9px;text-align:center;white-space:nowrap;">${SOCIALS.map(([n]) => n).join(' · ')}</td></tr>
       </table>
     </td>
   </tr></table>
