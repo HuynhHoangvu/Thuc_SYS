@@ -84,7 +84,19 @@ function shrinkSignatureEmblem(html: string) {
   );
 }
 
-export async function ensureDefaultEmailTemplates() {
+// The repair/seed pass below costs ~10 round trips to Mongo, so run it once per server instance, not on every
+// list request (it made /email-templates take ~4s to load). A failed pass is retried on the next call.
+let ensured: Promise<void> | null = null;
+
+export function ensureDefaultEmailTemplates() {
+  ensured ??= runEnsureDefaults().catch((error) => {
+    ensured = null;
+    throw error;
+  });
+  return ensured;
+}
+
+async function runEnsureDefaults() {
   const stale = await EmailTemplate.find({
     $or: [{ html: { $regex: 'logo\\.png" alt="Catholic MTA" width="180"' } }, { html: { $regex: 'color:#f39422;">Hoa Kỳ:' } }],
   });
@@ -118,8 +130,9 @@ export async function ensureDefaultEmailTemplates() {
     await legacyPractice.save();
   }
 
+  const present = new Set((await EmailTemplate.find({ seedKey: { $in: DEFAULTS.map((d) => d.seedKey) } }, 'seedKey').lean()).map((t) => t.seedKey));
   for (const item of DEFAULTS) {
-    if (await EmailTemplate.exists({ seedKey: item.seedKey })) continue;
+    if (present.has(item.seedKey)) continue;
     try {
       let html = await readFile(path.join(process.cwd(), 'email-templates', item.file), 'utf8');
       for (const [from, to] of item.replacements) html = html.replaceAll(from, to);
