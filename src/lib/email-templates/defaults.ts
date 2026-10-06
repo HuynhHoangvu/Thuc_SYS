@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { EmailTemplate } from '@/models/EmailTemplate';
+import { upgradeFooter } from './footer';
 
 const DEFAULTS = [
   {
@@ -85,9 +86,22 @@ export async function ensureDefaultEmailTemplates() {
     await t.save();
   }
 
+  // Roll the shared footer out to stored built-in copies (idempotent: copies that already carry it are skipped).
+  for (const t of await EmailTemplate.find({ seedKey: { $exists: true, $ne: null } })) {
+    const upgraded = upgradeFooter(t.html);
+    if (upgraded.changed) {
+      t.html = upgraded.html;
+      await t.save();
+    }
+  }
+
   // Replace only the legacy practice template. Staff-edited copies of the new
   // design are left alone because they no longer contain the old {{buoi1}} field.
-  const legacyPractice = await EmailTemplate.findOne({ seedKey: 'practice-schedule', html: { $regex: '\\{\\{buoi1\\}\\}' } });
+  // Also covers the fixed 3-session version ({{ngayBuoi1}}), replaced by the repeatable-rows design.
+  const legacyPractice = await EmailTemplate.findOne({
+    seedKey: 'practice-schedule',
+    html: { $regex: '\\{\\{(buoi1|ngayBuoi1)\\}\\}' },
+  });
   if (legacyPractice) {
     const html = await readFile(path.join(process.cwd(), 'email-templates', 'thong-bao-lich-luyen-tap-phong-van.html'), 'utf8');
     legacyPractice.name = 'Lịch thực hành phỏng vấn';

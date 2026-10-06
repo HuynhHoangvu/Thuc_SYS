@@ -26,6 +26,7 @@ The separate `/email-templates` dashboard page is a general-purpose library for 
 - Original HTML sources: `email-templates/*.html`
 - On the first API read, `src/lib/email-templates/defaults.ts` imports the two original files and replaces their example data with editable placeholders.
 - Supported preview fields are `{{tenHocSinh}}`, `{{tenPhuHuynh}}`, `{{maHoSo}}`, `{{tenTruong}}`, `{{quocGia}}`, `{{ngayTiepNhan}}`, and `{{ngayCapThu}}`. In the thank-you template, the service is rendered as `Hồ sơ du học {{quocGia}}` rather than being fixed to Mỹ.
+- Structured composer: `practice-schedule` opens `ComposerDialog` (not the flat field form) when its HTML still has the `<!--ROWS-->` marker. Form → email logic (sessions sorted by date, weekday, auto week range, subject, preheader, warnings) lives in `src/lib/email-templates/composers.ts`; repeated rows, `<!--MEET-->` button and `<!--PREHEADER-->` are marker blocks in `email-templates/thong-bao-lich-luyen-tap-phong-van.html`. A copy edited so the markers are gone falls back to the flat form. The old 3-session copy (`{{ngayBuoi1}}`) is replaced on the next API read.
 - Built-in templates can be edited but not deleted. User-created templates can be deleted.
 
 ## Library templates in the popup

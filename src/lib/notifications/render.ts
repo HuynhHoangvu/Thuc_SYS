@@ -3,6 +3,7 @@ import { dropParentWording, isParentOptionalKey } from './parent-wording';
 import { NOTIFY_FIELDS, countryKey, presetAppliesTo } from './templates';
 import { countryLabel } from '@/lib/countries';
 import { STRONG_STYLE, TEXT_TD_STYLE, letterCard, letterHead, letterSignature, letterSupport, letterTail } from './letter';
+import { FOOTER_CSS } from '@/lib/email-templates/footer';
 
 // Brand images live in public/email/. Sent mail embeds them inline (cid:<name>), so they show
 // without a public URL; the web preview loads them from /email/<name>.png.
@@ -18,6 +19,15 @@ export const EMAIL_ASSETS = [
   'ico-users',
   'ico-clipboard',
   'ico-clipboard-orange',
+  'ft-phone',
+  'ft-mail',
+  'ft-web',
+  'ft-facebook',
+  'ft-youtube',
+  'ft-instagram',
+  'ft-tiktok',
+  'ft-x',
+  'ft-threads',
   'facebook',
   'youtube',
   'instagram',
@@ -269,7 +279,7 @@ export function renderEmailHtml(input: RenderEmailInput) {
   return `<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">
-<title>${escapeHtml(input.subject.normalize('NFC'))}</title></head>
+<title>${escapeHtml(input.subject.normalize('NFC'))}</title><style>${FOOTER_CSS}</style></head>
 <body style="margin:0;padding:0;background-color:#e8eef7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
 ${letterHead(img, up(input.docLabel), input.caseCode ?? '', up(input.kicker), heading, up(input.eyebrow))}${letterBody(body, img, info)}${letterTail(img)}
 </body></html>`;

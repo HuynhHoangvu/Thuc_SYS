@@ -1,46 +1,22 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only">
-<title>[Catholic MTA] Nhắc bổ sung hồ sơ DS-160 – {{tenHocSinh}}</title>
-<style>
-  /*FOOTER-V3*/
+// Shared navy footer of every library email (company, contacts, offices | social links).
+// Taken verbatim from the approved reference letter (email-lich-phong-van-*.html): two columns on desktop,
+// stacked on a phone via the .col / .ft-* rules in FOOTER_CSS, with MSO ghost tables for Outlook.
+// It is 660px wide by design, so templates carrying it use a 660px card (upgradeFooter widens it).
+
+export const FOOTER_START = '<!--FOOTER-V3-->';
+export const FOOTER_END = '<!--/FOOTER-V3-->';
+const CSS_MARK = '/*FOOTER-V3*/';
+
+export const FOOTER_CSS = `${CSS_MARK}
   @media only screen and (max-width:680px) {
     .col { max-width:100% !important; width:100% !important; }
     .ft-sep { border-left:0 !important; padding-left:0 !important; border-top:1px solid #3A5A8C !important; padding-top:16px !important; margin-top:16px !important; }
     .ft-addr { padding:8px 0 0 0 !important; }
     .ft-txt { font-size:12px !important; line-height:19px !important; white-space:normal !important; }
     .ft-head { font-size:12px !important; }
-  }
-</style>
-</head>
-<body style="margin:0;padding:0;background:#eef2f8;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#222a35;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f8;"><tr><td align="center" style="padding:24px 8px;">
-<table role="presentation" width="660" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:660px;background:#fff;">
-  <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="45%" height="5" bgcolor="#1b4f9c" style="font-size:1px;line-height:1px;">&nbsp;</td><td bgcolor="#f39422" style="font-size:1px;line-height:1px;">&nbsp;</td></tr></table></td></tr>
-  <tr><td align="center" style="padding:30px 8% 23px;"><img src="/email/logo.png" alt="Catholic MTA" width="300" style="display:block;border:0;width:300px;max-width:100%;height:auto;"></td></tr>
-  <tr><td style="padding:0 8%;"><div style="border-top:1px solid #e3e8f0;"></div></td></tr>
-  <tr><td align="center" style="padding:23px 35px 20px;">
-    <div style="font-size:11px;line-height:18px;font-weight:bold;letter-spacing:2px;color:#f39422;">—&nbsp;&nbsp; THÔNG BÁO &nbsp;&nbsp;—</div>
-    <div style="padding-top:8px;font-size:27px;line-height:35px;font-weight:800;color:#14305f;">NHẮC BỔ SUNG HỒ SƠ</div>
-  </td></tr>
-  <tr><td style="padding:0 8% 28px;font-size:14px;line-height:23px;color:#222a35;">
-    <p style="margin:0 0 18px;">Kính gửi Quý Phụ huynh và em <strong style="color:#14305f;">{{tenHocSinh}}</strong>,</p>
-    <p style="margin:0 0 18px;text-align:justify;">Bộ phận Xử lý Hồ sơ xin thông báo hồ sơ của em <strong style="color:#14305f;">{{tenHocSinh}}</strong> hiện đang trong quá trình hoàn thiện <strong>Mẫu DS-160 – Đơn xin thị thực không định cư Hoa Kỳ</strong>.</p>
-    <p style="margin:0 0 18px;text-align:justify;">Để tiếp tục hoàn thiện Mẫu DS-160, <strong>Quý Phụ huynh và em vui lòng bổ sung các thông tin/giấy tờ còn thiếu sau:</strong></p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #dfe5ee;border-collapse:separate;border-spacing:0;border-radius:9px;overflow:hidden;margin:0 0 20px;">
-      <tr><td bgcolor="#143b73" style="padding:12px 16px;background:#143b73;color:#fff;font-size:13px;font-weight:bold;letter-spacing:.5px;"><img src="/email/ico-clipboard-orange.png" alt="" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-4px;">&nbsp;&nbsp; THÔNG TIN/HỒ SƠ CẦN BỔ SUNG</td></tr>
-      <tr><td style="padding:14px 18px 6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="22" valign="top" style="color:#f39422;font-size:20px;line-height:23px;">•</td><td style="padding:0 0 9px;line-height:23px;">{{noiDungBoSung1}}</td></tr></table></td></tr>
-      <tr><td style="padding:0 18px 6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="22" valign="top" style="color:#f39422;font-size:20px;line-height:23px;">•</td><td style="padding:0 0 9px;line-height:23px;">{{noiDungBoSung2}}</td></tr></table></td></tr>
-      <tr><td style="padding:0 18px 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="22" valign="top" style="color:#f39422;font-size:20px;line-height:23px;">•</td><td style="line-height:23px;">{{noiDungBoSung3}}</td></tr></table></td></tr>
-    </table>
-    <p style="margin:0 0 18px;text-align:justify;">Quý Phụ huynh và em vui lòng <strong>bổ sung đầy đủ các nội dung trên</strong> để Bộ phận Xử lý Hồ sơ tiếp tục kiểm tra và hoàn thiện Mẫu DS-160.</p>
-    <p style="margin:0 0 22px;">Cảm ơn sự phối hợp của Quý Phụ huynh và em.</p>
-    <p style="margin:0 0 10px;">Trân trọng,</p>
-    <table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="170" valign="middle" style="padding-right:18px;"><img src="/email/emblem.png" alt="Catholic MTA" width="160" style="display:block;border:0;width:160px;max-width:100%;height:auto;"></td><td valign="middle" style="border-left:2px solid #f39422;padding-left:18px;"><div style="font-size:17px;line-height:22px;font-weight:bold;color:#174b83;">Hồ Thị Đoan Thục</div><div style="font-size:13px;line-height:20px;font-weight:bold;color:#f39422;">Bộ phận xử lý hồ sơ</div><div style="font-size:13px;line-height:20px;padding-top:5px;">(+84) 909 721 055<br>admin@mtacorporation.com<br><span style="color:#174b83;">catholicmta.edu.vn</span></div></td></tr></table>
-  </td></tr>
-  <tr><td align="center" style="padding:10px 3% 30px;font-size:11.5px;line-height:24px;"><span style="background:#f6e6b4;color:#14305f;font-weight:bold;font-style:italic;padding:4px 7px;">Đây là thư thông báo tự động từ chúng tôi. Quý khách vui lòng không phản hồi trực tiếp thư này.</span></td></tr>
-  <!--FOOTER-V3-->
+  }`;
+
+export const EMAIL_FOOTER = `${FOOTER_START}
 <!-- Footer: [tên công ty / liên hệ | địa chỉ] | [mạng xã hội] -->
 <tr><td bgcolor="#002B66" style="background-color:#002B66;padding:16px 12px 13px;font-size:0;">
   <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width="434" valign="top"><![endif]-->
@@ -99,6 +75,33 @@
     <td width="50%" height="12" bgcolor="#FE8F04" style="background-color:#FE8F04;height:12px;font-size:0;line-height:0;">&nbsp;</td>
   </tr></table>
 </td></tr>
-<!--/FOOTER-V3-->
-</table></td></tr></table>
-</body></html>
+${FOOTER_END}`;
+
+// Swaps whichever older footer a template carries (the compact one-row letters, the multi-row FOOTER
+// comment layout, or an earlier V2 block) up to and including the bottom colour strip for EMAIL_FOOTER, widens
+// the card to 660px, and adds FOOTER_CSS. Unrecognised layouts come back unchanged, so a heavily
+// hand-edited copy is never damaged.
+export function upgradeFooter(html: string): { html: string; changed: boolean } {
+  if (html.includes(FOOTER_START)) return { html, changed: false };
+  const strip = /<tr>\s*<td>\s*<table[^>]*>\s*(?:<tbody>\s*)?<tr>\s*<td width="(?:45|50)%"/g;
+  let stripAt = -1;
+  for (const m of html.matchAll(strip)) stripAt = m.index!; // the last strip is the bottom one
+  if (stripAt < 0) return { html, changed: false };
+  const stripClose = /<\/table>\s*<\/td>\s*<\/tr>/g;
+  stripClose.lastIndex = stripAt;
+  const close = stripClose.exec(html);
+  if (!close) return { html, changed: false };
+  const end = close.index + close[0].length;
+
+  const head = html.slice(0, stripAt);
+  const v2 = head.lastIndexOf('<!--FOOTER-V2-->');
+  const comment = head.lastIndexOf('<!-- FOOTER');
+  const bare = head.search(/<tr>\s*<td bgcolor="#0f2f6b"[^>]*>(?:(?!<tr>)[\s\S])*?CÔNG TY TNHH/);
+  const start = [v2, comment, bare].find((i) => i >= 0);
+  if (start === undefined) return { html, changed: false };
+
+  let out = `${html.slice(0, start)}${EMAIL_FOOTER}${html.slice(end)}`;
+  out = out.replace('width="600"', 'width="660"').replace('max-width:600px', 'max-width:660px');
+  if (!out.includes(CSS_MARK)) out = out.replace('</head>', `<style>\n  ${FOOTER_CSS}\n</style>\n</head>`);
+  return { html: out, changed: true };
+}

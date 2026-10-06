@@ -13,12 +13,27 @@
   :root { color-scheme: light only; supported-color-schemes: light only; }
   body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  @media only screen and (max-width:620px) {
+    .stack { display:block !important; width:100% !important; box-sizing:border-box; }
+    .stack-sep { border-left:0 !important; border-top:1px solid #8ab4d1 !important; }
+  }
+</style>
+<style>
+  /*FOOTER-V3*/
+  @media only screen and (max-width:680px) {
+    .col { max-width:100% !important; width:100% !important; }
+    .ft-sep { border-left:0 !important; padding-left:0 !important; border-top:1px solid #3A5A8C !important; padding-top:16px !important; margin-top:16px !important; }
+    .ft-addr { padding:8px 0 0 0 !important; }
+    .ft-txt { font-size:12px !important; line-height:19px !important; white-space:normal !important; }
+    .ft-head { font-size:12px !important; }
+  }
 </style>
 </head>
 <body style="margin:0;padding:0;background-color:#eef2f8;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#222a35;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<!--PREHEADER--><div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:#eef2f8;">{{preheader}}&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;</div><!--/PREHEADER-->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef2f8;">
 <tr><td align="center" style="padding:24px 8px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#ffffff;">
+<table role="presentation" width="660" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:660px;background-color:#ffffff;">
 
   <!-- TOP BRAND STRIP -->
   <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="45%" height="5" bgcolor="#1b4f9c" style="height:5px;background-color:#1b4f9c;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">&nbsp;</td><td width="55%" height="5" bgcolor="#f39422" style="height:5px;background-color:#f39422;font-size:1px;line-height:1px;mso-line-height-rule:exactly;">&nbsp;</td></tr></table></td></tr>
@@ -39,28 +54,16 @@
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #dce3eb;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;margin:0 0 16px 0;">
       <tr><td colspan="4" bgcolor="#10386f" style="background:#10386f;color:#ffffff;font-size:14px;line-height:22px;font-weight:bold;padding:11px 16px;letter-spacing:.3px;"><img src="/email/ico-calendar.png" alt="" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-4px;">&nbsp;&nbsp; LỊCH THỰC HÀNH PHỎNG VẤN</td></tr>
-      <tr>
-        <td width="20%" style="border-bottom:1px solid #e4e7eb;padding:10px 10px;text-align:center;"><span style="display:inline-block;background:#fff0d3;border-radius:5px;padding:5px 14px;font-weight:bold;white-space:nowrap;">Buổi 1</span></td>
-        <td width="9%" style="border-bottom:1px solid #e4e7eb;border-left:1px solid #eadfcf;padding:10px 5px;text-align:center;"><img src="/email/ico-calendar.png" alt="Lịch" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;"></td>
-        <td width="43%" style="border-bottom:1px solid #e4e7eb;padding:8px 6px;"><strong style="color:#13264b;">Ngày {{ngayBuoi1}}</strong><br>{{thuBuoi1}}</td>
-        <td width="28%" style="border-bottom:1px solid #e4e7eb;border-left:1px solid #eadfcf;padding:8px 10px;color:#13264b;font-weight:bold;white-space:nowrap;"><img src="/email/ico-clock.png" alt="Giờ" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;vertical-align:-5px;">&nbsp;&nbsp;{{gioBuoi1}}</td>
-      </tr>
-      <tr>
-        <td style="border-bottom:1px solid #e4e7eb;padding:10px;text-align:center;"><span style="display:inline-block;background:#fff0d3;border-radius:5px;padding:5px 14px;font-weight:bold;white-space:nowrap;">Buổi 2</span></td>
-        <td style="border-bottom:1px solid #e4e7eb;border-left:1px solid #eadfcf;padding:10px 5px;text-align:center;"><img src="/email/ico-calendar.png" alt="Lịch" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;"></td>
-        <td style="border-bottom:1px solid #e4e7eb;padding:8px 6px;"><strong style="color:#13264b;">Ngày {{ngayBuoi2}}</strong><br>{{thuBuoi2}}</td>
-        <td style="border-bottom:1px solid #e4e7eb;border-left:1px solid #eadfcf;padding:8px 10px;color:#13264b;font-weight:bold;white-space:nowrap;"><img src="/email/ico-clock.png" alt="Giờ" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;vertical-align:-5px;">&nbsp;&nbsp;{{gioBuoi2}}</td>
-      </tr>
-      <tr>
-        <td style="padding:10px;text-align:center;"><span style="display:inline-block;background:#fff0d3;border-radius:5px;padding:5px 14px;font-weight:bold;white-space:nowrap;">Buổi 3</span></td>
-        <td style="border-left:1px solid #eadfcf;padding:10px 5px;text-align:center;"><img src="/email/ico-calendar.png" alt="Lịch" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;"></td>
-        <td style="padding:8px 6px;"><strong style="color:#13264b;">Ngày {{ngayBuoi3}}</strong><br>{{thuBuoi3}}</td>
-        <td style="border-left:1px solid #eadfcf;padding:8px 10px;color:#13264b;font-weight:bold;white-space:nowrap;"><img src="/email/ico-clock.png" alt="Giờ" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;vertical-align:-5px;">&nbsp;&nbsp;{{gioBuoi3}}</td>
-      </tr>
+<!--ROWS--><tr>
+        <td width="20%" style="{{bd}}padding:10px 10px;text-align:center;"><span style="display:inline-block;background:#fff0d3;border-radius:5px;padding:5px 14px;font-weight:bold;white-space:nowrap;">{{label}}</span></td>
+        <td width="9%" style="{{bd}}border-left:1px solid #eadfcf;padding:10px 5px;text-align:center;"><img src="/email/ico-calendar.png" alt="Lịch" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;"></td>
+        <td width="43%" style="{{bd}}padding:8px 6px;"><strong style="color:#13264b;">Ngày {{ngay}}</strong><br>{{thu}}</td>
+        <td width="28%" style="{{bd}}border-left:1px solid #eadfcf;padding:8px 10px;color:#13264b;font-weight:bold;white-space:nowrap;"><img src="/email/ico-clock.png" alt="Giờ" width="20" height="20" style="display:inline-block;border:0;width:20px;height:20px;vertical-align:-5px;">&nbsp;&nbsp;{{gio}}</td>
+      </tr><!--/ROWS-->
       <tr><td colspan="4" style="padding:8px 14px 4px 14px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef6ff;border-radius:7px;"><tr>
-          <td width="50%" style="padding:11px 14px;"><span style="display:inline-block;background:#16487d;border-radius:50%;line-height:36px;text-align:center;width:36px;height:36px;vertical-align:middle;"><img src="/email/ico-video.png" alt="Hình thức" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-5px;"></span><span style="display:inline-block;vertical-align:middle;padding-left:12px;"><strong style="color:#17305d;">Hình thức</strong><br>{{hinhThuc}}</span></td>
-          <td width="50%" style="border-left:1px solid #8ab4d1;padding:11px 14px;"><span style="display:inline-block;background:#cce4ff;border-radius:50%;line-height:36px;text-align:center;width:36px;height:36px;vertical-align:middle;"><img src="/email/ico-users.png" alt="Mentor" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-5px;"></span><span style="display:inline-block;vertical-align:middle;padding-left:12px;"><strong style="color:#17305d;">Mentor</strong><br><strong>{{mentor}}</strong></span></td>
+          <td class="stack" width="50%" style="padding:11px 14px;"><span style="display:inline-block;background:#16487d;border-radius:50%;line-height:36px;text-align:center;width:36px;height:36px;vertical-align:middle;"><img src="/email/ico-video.png" alt="Hình thức" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-5px;"></span><span style="display:inline-block;vertical-align:middle;padding-left:12px;"><strong style="color:#17305d;">Hình thức</strong><br>{{hinhThuc}}</span></td>
+          <td class="stack stack-sep" width="50%" style="border-left:1px solid #8ab4d1;padding:11px 14px;"><span style="display:inline-block;background:#cce4ff;border-radius:50%;line-height:36px;text-align:center;width:36px;height:36px;vertical-align:middle;"><img src="/email/ico-users.png" alt="Mentor" width="19" height="19" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:-5px;"></span><span style="display:inline-block;vertical-align:middle;padding-left:12px;"><strong style="color:#17305d;">Mentor</strong><br><strong>{{mentor}}</strong></span></td>
         </tr></table>
       </td></tr>
       <tr><td colspan="4" style="padding:4px 14px 10px 14px;">
@@ -69,6 +72,9 @@
           <td style="padding:10px 14px 10px 8px;"><strong style="color:#17305d;">Nội dung</strong><br>{{noiDungLuyenTap}}</td>
         </tr></table>
       </td></tr>
+      <!--MEET--><tr><td colspan="4" align="center" style="padding:2px 14px 12px 14px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td bgcolor="#f39422" style="background-color:#f39422;border-radius:8px;"><a href="{{meetUrl}}" target="_blank" style="display:inline-block;padding:11px 24px;font-family:'Segoe UI',Arial,sans-serif;font-size:14px;line-height:20px;font-weight:bold;color:#ffffff;text-decoration:none;">{{meetLabel}}</a></td></tr></table>
+      </td></tr><!--/MEET-->
     </table>
 
     <p style="margin:0 0 13px 0;">Để quá trình chuẩn bị phỏng vấn đạt hiệu quả tốt nhất, <strong>em vui lòng sắp xếp thời gian và tham gia đầy đủ, đúng giờ</strong> các buổi thực hành theo lịch trên.</p>
@@ -109,38 +115,66 @@
     <span style="background-color:#f6e6b4;color:#14305f;font-weight:bold;font-style:italic;padding:3px 6px;"><b><i>Đây là thư thông báo tự động từ chúng tôi. Quý khách vui lòng không phản hồi trực tiếp thư này.</i></b></span>
   </td></tr>
 
-  <!-- FOOTER -->
-  <tr>
-    <td bgcolor="#0f2f6b" style="background-color:#0f2f6b;padding:34px 5% 0 5%;">
-      <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1.5px;font-weight:bold;color:#ffffff;line-height:18px;padding-bottom:14px;">CÔNG TY TNHH TƯ VẤN DU HỌC CATHOLIC MTA</div>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td valign="top" style="padding:0 10px 0 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:18px;color:#c9d8f0;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;"><tr><td valign="middle" width="16" style="padding:0 9px 0 0;"><img src="/email/ico-phone.png" alt="Điện thoại" width="16" height="16" style="display:block;border:0;width:16px;height:16px;"></td><td valign="middle" style="white-space:nowrap;"><a href="tel:+84909451822" style="color:#c9d8f0;text-decoration:none;white-space:nowrap;">0909 451 822</a> &ndash; <a href="tel:+84902968652" style="color:#c9d8f0;text-decoration:none;white-space:nowrap;">0902 968 652</a></td></tr></table>
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;"><tr><td valign="middle" width="16" style="padding:0 9px 0 0;"><img src="/email/ico-mail.png" alt="Thư điện tử" width="16" height="16" style="display:block;border:0;width:16px;height:16px;"></td><td valign="middle" style="white-space:nowrap;"><a href="mailto:info@mtacorporation.com" style="color:#d5e4fa;text-decoration:underline;">info@mtacorporation.com</a></td></tr></table>
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 0 0;"><tr><td valign="middle" width="16" style="padding:0 9px 0 0;"><img src="/email/ico-web.png" alt="Trang web" width="16" height="16" style="display:block;border:0;width:16px;height:16px;"></td><td valign="middle" style="white-space:nowrap;"><a href="https://catholicmta.edu.vn" style="color:#d5e4fa;text-decoration:underline;">catholicmta.edu.vn</a></td></tr></table>
-          </td>
-          <td valign="top" width="100%" style="padding:0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:18px;color:#c9d8f0;">
-            <div style="padding:0 0 8px 0;"><strong style="color:#f39422;">Việt Nam:</strong> <a href="https://www.google.com/maps/search/?api=1&amp;query=45+%C4%90inh+Ti%C3%AAn+Ho%C3%A0ng%2C+Ph%C6%B0%E1%BB%9Dng+S%C3%A0i+G%C3%B2n%2C+TP.HCM" target="_blank" style="color:#c9d8f0;text-decoration:none;">45 Đinh Tiên Hoàng, Phường Sài Gòn, TP.HCM</a></div>
-            <div style="padding:0 0 8px 0;"><strong><a href="https://www.google.com/maps/search/?api=1&amp;query=8107+Bolsa+Ave%2C+Midway+City%2C+CA+92655" target="_blank" style="color:#f39422;text-decoration:none;">Hoa Kỳ:</a></strong> <a href="https://www.google.com/maps/search/?api=1&amp;query=8107+Bolsa+Ave%2C+Midway+City%2C+CA+92655" target="_blank" style="color:#c9d8f0;text-decoration:none;">8107 Bolsa Ave, Midway City, CA 92655</a></div>
-            <div style="padding:0 0 0 0;"><strong style="color:#f39422;">Canada:</strong> <a href="https://www.google.com/maps/search/?api=1&amp;query=110+James+St.+Suite+200%2C+St.+Catharines%2C+ON+L2R+7E8%2C+CA" target="_blank" style="color:#c9d8f0;text-decoration:none;">110 James St. Suite 200, St. Catharines, ON L2R 7E8, CA</a></div>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" bgcolor="#0f2f6b" style="background-color:#0f2f6b;padding:30px 4% 0 4%;">
-      <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:3px;color:#9fb8e0;font-weight:bold;padding-bottom:12px;line-height:16px;">HÃY KẾT NỐI CÙNG CHÚNG TÔI</div>
-      <a href="https://www.facebook.com/duhoccatholicmta" target="_blank" title="Facebook Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/facebook.png" alt="Facebook" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a><a href="https://www.youtube.com/@duhoccatholicmta" target="_blank" title="YouTube Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/youtube.png" alt="YouTube" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a><a href="https://www.instagram.com/duhoc_catholicmta" target="_blank" title="Instagram Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/instagram.png" alt="Instagram" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a><a href="https://www.tiktok.com/@catholicmta" target="_blank" title="TikTok Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/tiktok.png" alt="TikTok" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a><a href="https://x.com/DHCATHOLICMTA" target="_blank" title="X Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/x.png" alt="X" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a><a href="https://www.threads.com/@duhoc_catholicmta" target="_blank" title="Threads Catholic MTA" style="text-decoration:none;display:inline-block;margin:0 4px 8px 4px;"><img src="/email/threads.png" alt="Threads" width="40" height="40" style="display:block;border:0;width:40px;height:40px;background-color:#ffffff;color:#1b4f9c;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:40px;text-align:center;border-radius:9px;"></a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" bgcolor="#0f2f6b" style="background-color:#0f2f6b;padding:8px 3% 32px 3%;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11.5px;line-height:24px;">
-      <a href="https://www.facebook.com/duhoccatholicmta" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">Facebook</a> <span style="color:#f39422;padding:0 5px;">&bull;</span> <a href="https://www.youtube.com/@duhoccatholicmta" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">YouTube</a> <span style="color:#f39422;padding:0 5px;">&bull;</span> <a href="https://www.instagram.com/duhoc_catholicmta" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">Instagram</a> <span style="color:#f39422;padding:0 5px;">&bull;</span> <a href="https://www.tiktok.com/@catholicmta" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">TikTok</a> <span style="color:#f39422;padding:0 5px;">&bull;</span> <a href="https://x.com/DHCATHOLICMTA" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">X</a> <span style="color:#f39422;padding:0 5px;">&bull;</span> <a href="https://www.threads.com/@duhoc_catholicmta" target="_blank" style="color:#ffffff;text-decoration:none;font-weight:bold;white-space:nowrap;">Threads</a>
-    </td>
-  </tr>
-  <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="45%" style="height:10px;background-color:#1b4f9c;font-size:0;line-height:0;">&nbsp;</td><td width="55%" style="height:10px;background-color:#f39422;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
+  <!--FOOTER-V3-->
+<!-- Footer: [tên công ty / liên hệ | địa chỉ] | [mạng xã hội] -->
+<tr><td bgcolor="#002B66" style="background-color:#002B66;padding:16px 12px 13px;font-size:0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width="434" valign="top"><![endif]-->
+  <div class="col" style="display:inline-block;width:100%;max-width:434px;vertical-align:top;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr><td class="ft-head" style="font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:15px;font-weight:bold;color:#FFFFFF;letter-spacing:0.4px;padding:0 0 9px 1px;">CÔNG TY TNHH TƯ VẤN DU HỌC CATHOLIC MTA</td></tr>
+      <tr><td style="font-size:0;">
+        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width="140" valign="top"><![endif]-->
+        <div class="col" style="display:inline-block;width:100%;max-width:140px;vertical-align:top;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img src="/email/ft-phone.png" width="13" height="13" alt="" style="display:block;width:13px;height:13px;border:0;outline:none;text-decoration:none;"></td>
+              <td class="ft-txt" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><a href="tel:+84909451822" style="color:#FFFFFF;text-decoration:none;">0909 451 822</a> – <a href="tel:+84902968652" style="color:#FFFFFF;text-decoration:none;">0902 968 652</a></td>
+            </tr>
+            <tr>
+              <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img src="/email/ft-mail.png" width="13" height="11" alt="" style="display:block;width:13px;height:11px;border:0;outline:none;text-decoration:none;"></td>
+              <td class="ft-txt" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><a href="mailto:info@mtacorporation.com" style="color:#FFFFFF;text-decoration:underline;">info@mtacorporation.com</a></td>
+            </tr>
+            <tr>
+              <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img src="/email/ft-web.png" width="13" height="13" alt="" style="display:block;width:13px;height:13px;border:0;outline:none;text-decoration:none;"></td>
+              <td class="ft-txt" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><a href="https://catholicmta.edu.vn" target="_blank" style="color:#FFFFFF;text-decoration:underline;">catholicmta.edu.vn</a></td>
+            </tr>
+          </table>
+        </div>
+        <!--[if mso]></td><td width="294" valign="top" style="padding-left:11px;padding-right:11px;"><![endif]-->
+        <div class="col ft-addr" style="display:inline-block;width:100%;max-width:272px;vertical-align:top;padding-left:11px;padding-right:11px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr><td class="ft-txt" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><strong style="color:#FE9B03;">Việt Nam:</strong> 45 Đinh Tiên Hoàng, Phường Sài Gòn, TP.HCM</td></tr>
+            <tr><td class="ft-txt" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><strong style="color:#FE9B03;">Hoa Kỳ:</strong> 8107 Bolsa Ave, Midway City, CA 92655</td></tr>
+            <tr><td class="ft-txt" style="font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:14px;color:#FFFFFF;padding:3px 0;white-space:nowrap;"><strong style="color:#FE9B03;">Canada:</strong> 110 James St. Suite 200, St. Catharines, ON L2R 7E8, CA</td></tr>
+          </table>
+        </div>
+        <!--[if mso]></td></tr></table><![endif]-->
+      </td></tr>
+    </table>
+  </div>
+  <!--[if mso]></td><td width="200" valign="top" style="border-left:1px solid #3A5A8C;padding-left:11px;"><![endif]-->
+  <div class="col ft-sep" style="display:inline-block;width:100%;max-width:188px;vertical-align:top;border-left:1px solid #3A5A8C;padding:0 0 14px 11px;text-align:center;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr><td align="center" class="ft-head" style="font-family:Arial,Helvetica,sans-serif;font-size:9.5px;line-height:15px;font-weight:bold;color:#FFFFFF;letter-spacing:0.4px;padding-bottom:9px;text-align:center;white-space:nowrap;">HÃY KẾT NỐI CÙNG CHÚNG TÔI</td></tr>
+      <tr><td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+          <td style="padding-right:4px;"><a href="https://www.facebook.com/duhoccatholicmta" target="_blank" rel="noopener" title="Facebook" style="text-decoration:none;"><img src="/email/ft-facebook.png" width="24" height="25" alt="Facebook" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td><td style="padding-right:4px;"><a href="https://www.youtube.com/@duhoccatholicmta" target="_blank" rel="noopener" title="YouTube" style="text-decoration:none;"><img src="/email/ft-youtube.png" width="24" height="25" alt="YouTube" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td><td style="padding-right:4px;"><a href="https://www.instagram.com/duhoc_catholicmta" target="_blank" rel="noopener" title="Instagram" style="text-decoration:none;"><img src="/email/ft-instagram.png" width="24" height="25" alt="Instagram" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td><td style="padding-right:4px;"><a href="https://www.tiktok.com/@catholicmta" target="_blank" rel="noopener" title="TikTok" style="text-decoration:none;"><img src="/email/ft-tiktok.png" width="24" height="25" alt="TikTok" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td><td style="padding-right:4px;"><a href="https://x.com/DHCATHOLICMTA" target="_blank" rel="noopener" title="X" style="text-decoration:none;"><img src="/email/ft-x.png" width="24" height="25" alt="X" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td><td style="padding-right:0;"><a href="https://www.threads.com/@duhoc_catholicmta" target="_blank" rel="noopener" title="Threads" style="text-decoration:none;"><img src="/email/ft-threads.png" width="24" height="25" alt="Threads" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#FFFFFF;"></a></td>
+        </tr></table>
+      </td></tr>
+      <tr><td align="center" class="ft-txt" style="padding-top:9px;font-family:Arial,Helvetica,sans-serif;font-size:7.5px;line-height:12px;color:#FFFFFF;text-align:center;white-space:nowrap;">Facebook · YouTube · Instagram · TikTok · X · Threads</td></tr>
+    </table>
+  </div>
+  <!--[if mso]></td></tr></table><![endif]-->
+</td></tr>
+
+<!-- Thanh màu dưới cùng -->
+<tr><td>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td width="50%" height="12" bgcolor="#055BB2" style="background-color:#055BB2;height:12px;font-size:0;line-height:0;">&nbsp;</td>
+    <td width="50%" height="12" bgcolor="#FE8F04" style="background-color:#FE8F04;height:12px;font-size:0;line-height:0;">&nbsp;</td>
+  </tr></table>
+</td></tr>
+<!--/FOOTER-V3-->
 
 </table>
 </td></tr>

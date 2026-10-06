@@ -8,6 +8,8 @@ import { emailTemplateApi } from './email-template.api';
 import type { EmailTemplate, EmailTemplateInput } from './email-template.types';
 import { fillLibraryText } from '@/lib/email-templates/stage-library';
 import { copyEmailHtml } from '@/features/notifications/copyEmail';
+import { composerFor } from '@/lib/email-templates/composers';
+import { ComposerDialog } from './ComposerDialog';
 
 const inputClass =
   'w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring';
@@ -55,6 +57,7 @@ export function EmailTemplatesPage() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<EmailTemplate | 'new' | null>(null);
   const [previewing, setPreviewing] = useState<EmailTemplate | null>(null);
+  const [composing, setComposing] = useState<EmailTemplate | null>(null);
   const [notice, setNotice] = useState('');
   const { data: templates, isLoading, isError } = useQuery({
     queryKey: ['email-templates'],
@@ -108,7 +111,7 @@ export function EmailTemplatesPage() {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              <button onClick={() => setPreviewing(template)} className="rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">
+              <button onClick={() => (composerFor(template) ? setComposing(template) : setPreviewing(template))} className="rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">
                 Điền tên &amp; sao chép
               </button>
               <button onClick={() => setEditing(template)} className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted">
@@ -126,6 +129,7 @@ export function EmailTemplatesPage() {
       {templates?.length === 0 && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Chưa có mẫu email nào.</p>}
 
       <EditorDialog template={editing} onClose={() => setEditing(null)} />
+      <ComposerDialog template={composing} onClose={() => setComposing(null)} onNotice={setNotice} />
       <PreviewDialog template={previewing} onClose={() => setPreviewing(null)} onNotice={setNotice} />
     </div>
   );

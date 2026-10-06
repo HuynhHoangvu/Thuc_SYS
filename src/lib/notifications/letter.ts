@@ -2,6 +2,8 @@
 // Each block is that email's HTML verbatim with per-student values turned into parameters,
 // so sent mail matches the reference exactly. Change the look here, not in render.ts.
 
+import { EMAIL_FOOTER } from '@/lib/email-templates/footer';
+
 type Img = (name: string) => string;
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -44,13 +46,6 @@ function letterTailRaw(img: Img) {
 }
 
 export function letterTail(img: Img) {
-  return letterTailRaw(img)
-    .replace(
-      '</tbody></table></td></tr><tr><td align="center" bgcolor="#0f2f6b" style="background-color:rgb(15,47,107);padding:14px 20px 32px;font-size:12px;line-height:24px">',
-      '</tbody></table><div align="center" style="padding:14px 20px 32px;font-size:12px;line-height:24px">',
-    )
-    .replace(
-      '</a></td></tr><tr><td style="padding:0px"><table role="presentation" width="100%"',
-      '</a></div></td></tr><tr><td style="padding:0px"><table role="presentation" width="100%"',
-    );
+  const footer = EMAIL_FOOTER.replace(/src="\/email\/([\w-]+)\.png"/g, (_match, name: string) => `src="${img(name)}"`);
+  return `<tr><td align="center" style="padding:34px 20px 36px;font-size:12px;line-height:24px"><span style="background-color:#FEECBE;color:#0A1F4E;font-weight:bold;font-style:italic;padding:6px 10px;border-radius:6px"><b><i>Đây là thư thông báo tự động từ chúng tôi. Quý khách vui lòng không phản hồi trực tiếp thư này.</i></b></span></td></tr>${footer}</tbody></table></td></tr></tbody></table></div>`;
 }

@@ -26,7 +26,7 @@ function escapeHtml(s: string) {
 }
 
 // "2026-10-19T10:30" → "10:30 sáng" (24h clock → sáng / chiều / tối).
-function timeOfDay(value?: string) {
+export function timeOfDay(value?: string) {
   const m = value?.match(/T(\d{2}):(\d{2})/);
   if (!m) return '';
   const h = Number(m[1]);
@@ -34,7 +34,7 @@ function timeOfDay(value?: string) {
 }
 
 // "2026-10-19" or "2026-10-19T10:30" → "19/10/2026".
-function dateOf(value?: string) {
+export function dateOf(value?: string) {
   const m = value?.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : (value?.trim() ?? '');
 }
