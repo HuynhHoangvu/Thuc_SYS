@@ -1,30 +1,34 @@
 // Shared navy footer of every library email (company, contacts, offices | social links).
-// One fixed layout at every width: two columns in percentages, text never wraps, and as the screen narrows
-// the font sizes and icons shrink in steps (FOOTER_CSS) while the columns scale with the card. A client that drops
-// <style> (e.g. a paste into Gmail compose) simply keeps the desktop sizes.
+// One fixed layout at every width: two columns, text never wraps, and as the screen narrows the font sizes and
+// icons shrink in steps (FOOTER_CSS). Icons keep explicit pixel sizes (a percentage max-width inside an auto-width
+// table cell collapses the image to 0, which made the contact icons vanish). A client that drops <style>
+// (e.g. a paste into Gmail compose) keeps the desktop sizes, which fit the 660px card.
 
-export const FOOTER_START = '<!--FOOTER-V4-->';
-export const FOOTER_END = '<!--/FOOTER-V4-->';
-const CSS_MARK = '/*FOOTER-V4*/';
+export const FOOTER_START = '<!--FOOTER-V5-->';
+export const FOOTER_END = '<!--/FOOTER-V5-->';
+const CSS_MARK = '/*FOOTER-V5*/';
 
 export const FOOTER_CSS = `${CSS_MARK}
   @media only screen and (max-width:620px) {
     .ft-head { font-size:9px !important; letter-spacing:0.2px !important; }
     .ft-txt { font-size:8px !important; line-height:13px !important; }
     .ft-sm { font-size:6.5px !important; }
-    .ft-ico { width:11px !important; height:auto !important; }
+    .ft-ico { width:11px !important; height:11px !important; }
+    .ft-soc { width:20px !important; height:auto !important; }
   }
   @media only screen and (max-width:520px) {
     .ft-head { font-size:8px !important; }
     .ft-txt { font-size:7px !important; line-height:12px !important; }
     .ft-sm { font-size:5.5px !important; }
-    .ft-ico { width:9px !important; }
+    .ft-ico { width:9px !important; height:9px !important; }
+    .ft-soc { width:16px !important; }
   }
   @media only screen and (max-width:440px) {
     .ft-head { font-size:5.2px !important; letter-spacing:0 !important; }
     .ft-txt { font-size:4.8px !important; line-height:9px !important; }
     .ft-sm { font-size:4px !important; }
-    .ft-ico { width:6px !important; }
+    .ft-ico { width:6px !important; height:6px !important; }
+    .ft-soc { width:12px !important; }
   }`;
 
 const FONT = 'font-family:Arial,Helvetica,sans-serif;';
@@ -35,7 +39,7 @@ const mapUrl = (query: string) => `https://www.google.com/maps/search/?api=1&amp
 
 function contact(icon: string, w: number, h: number, alt: string, inner: string) {
   return `<tr>
-            <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img class="ft-ico" src="/email/${icon}.png" width="${w}" height="${h}" alt="${alt}" style="display:block;width:${w}px;max-width:100%;height:auto;border:0;"></td>
+            <td width="13" valign="middle" style="width:13px;padding:3px 6px 3px 0;"><img class="ft-ico" src="/email/${icon}.png" width="${w}" height="${h}" alt="${alt}" style="display:block;width:${w}px;height:${h}px;border:0;"></td>
             <td class="ft-txt" valign="middle" style="${FONT}font-size:9px;line-height:14px;color:${WHITE};padding:3px 0;white-space:nowrap;">${inner}</td>
           </tr>`;
 }
@@ -56,7 +60,7 @@ const SOCIALS: [string, string, string][] = [
 
 const socialCells = SOCIALS.map(
   ([name, file, url], i) =>
-    `<td width="16%" style="padding-right:${i === SOCIALS.length - 1 ? 0 : 3}%;"><a href="${url}" target="_blank" rel="noopener" title="${name}" style="text-decoration:none;"><img src="/email/ft-${file}.png" width="24" height="25" alt="${name}" style="display:block;width:100%;max-width:24px;height:auto;border:0;font-family:Arial,Helvetica,sans-serif;font-size:7px;color:${WHITE};"></a></td>`
+    `<td style="padding-right:${i === SOCIALS.length - 1 ? 0 : 4}px;"><a href="${url}" target="_blank" rel="noopener" title="${name}" style="text-decoration:none;"><img class="ft-soc" src="/email/ft-${file}.png" width="24" height="25" alt="${name}" style="display:block;width:24px;height:25px;border:0;font-family:Arial,Helvetica,sans-serif;font-size:7px;color:${WHITE};"></a></td>`
 ).join('');
 
 // Bottom blue/orange colour bar, part of the footer block.
@@ -70,7 +74,7 @@ const FOOTER_STRIP = `<!--FOOTER-STRIP--><tr><td>
 export const EMAIL_FOOTER = `${FOOTER_START}
 <tr><td bgcolor="#002B66" style="background-color:#002B66;padding:16px 12px 13px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td valign="top" width="73%" style="padding-right:2%;">
+    <td valign="top" width="60%" style="padding-right:2%;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td class="ft-head" style="${FONT}font-size:10.5px;line-height:15px;font-weight:bold;color:${WHITE};letter-spacing:0.4px;padding:0 0 9px 1px;white-space:nowrap;">CÔNG TY TNHH TƯ VẤN DU HỌC CATHOLIC MTA</td></tr>
         <tr><td>
@@ -93,10 +97,10 @@ export const EMAIL_FOOTER = `${FOOTER_START}
         </td></tr>
       </table>
     </td>
-    <td valign="top" width="25%" align="center" style="border-left:1px solid #3A5A8C;padding-left:2%;text-align:center;">
+    <td valign="top" width="40%" align="center" style="border-left:1px solid #3A5A8C;padding-left:2%;text-align:center;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td align="center" class="ft-head" style="${FONT}font-size:9.5px;line-height:15px;font-weight:bold;color:${WHITE};letter-spacing:0.4px;padding-bottom:9px;text-align:center;white-space:nowrap;">HÃY KẾT NỐI CÙNG CHÚNG TÔI</td></tr>
-        <tr><td align="center"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${socialCells}</tr></table></td></tr>
+        <tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>${socialCells}</tr></table></td></tr>
         <tr><td align="center" class="ft-sm" style="${FONT}font-size:7.5px;line-height:12px;color:${WHITE};padding-top:9px;text-align:center;white-space:nowrap;">${SOCIALS.map(([n]) => n).join(' · ')}</td></tr>
       </table>
     </td>
@@ -105,8 +109,8 @@ export const EMAIL_FOOTER = `${FOOTER_START}
 ${FOOTER_STRIP}
 ${FOOTER_END}`;
 
-const OLD_BLOCK = /<!--FOOTER-V3-->[\s\S]*?<!--\/FOOTER-V3-->/;
-const OLD_CSS = /\/\*FOOTER-V3\*\/[\s\S]*?\n {2}\}/;
+const OLD_BLOCK = /<!--FOOTER-V[345]-->[\s\S]*?<!--\/FOOTER-V[345]-->/;
+const OLD_CSS = new RegExp('/\\*FOOTER-V[345]\\*/[\\s\\S]*?\\n {2}\\}(?=\\s*</style>)');
 
 // Swaps whichever older footer a template carries (compact one-row letters, the multi-row FOOTER comment layout,
 // or an earlier V3 block) up to and including the bottom colour strip for EMAIL_FOOTER, widens the card to
