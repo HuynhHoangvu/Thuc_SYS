@@ -67,7 +67,7 @@ export function DailyNotesHeader() {
             title="Chỉnh sửa ghi chú hôm nay"
           >
             <CalendarDays size={17} className="shrink-0 text-amber-600" />
-            <span className="min-w-0 truncate"><strong>Hôm nay:</strong> {todayNote.content}</span>
+            <span className="min-w-0 line-clamp-3 whitespace-pre-line break-words"><strong>Hôm nay:</strong> {todayNote.content}</span>
             <Pencil size={14} className="shrink-0 opacity-60" />
           </button>
         ) : (

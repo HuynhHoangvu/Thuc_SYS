@@ -15,13 +15,14 @@ export const GET = withErrorHandling(async (req) => {
   const type = parseType(searchParams.get('type'));
   await connectDB();
 
-  const count = await StageTemplate.countDocuments({ type });
-  if (count === 0) {
+  // One query in the normal case; the count round trip is only needed to seed an empty collection.
+  let stages = await StageTemplate.find({ type }).sort({ order: 1 }).lean();
+  if (stages.length === 0) {
     const defaults = type === 'travel' ? DEFAULT_TRAVEL_STAGES : DEFAULT_STAGES;
     await StageTemplate.insertMany(defaults.map((s) => ({ ...s, type })));
+    stages = await StageTemplate.find({ type }).sort({ order: 1 }).lean();
   }
-  const stages = await StageTemplate.find({ type }).sort({ order: 1 });
-  return ok(stages.map((s) => toStageDTO(s.toObject())));
+  return ok(stages.map((s) => toStageDTO(s)));
 });
 
 export const POST = withErrorHandling(async (req) => {

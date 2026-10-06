@@ -44,19 +44,21 @@ export const GET = withErrorHandling(async (req) => {
     }
     return {};
   };
-  const quick = await quickMatch(query.quick);
   const pinned: Record<string, unknown> = query.pinned ? { pinned: true } : {};
   const country: Record<string, unknown> = query.destinationCountry ? { destinationCountry: toDbCountry(query.destinationCountry) } : {};
   const stage: Record<string, unknown> = query.stage ? { stage: query.stage } : {};
-  const where = { ...base, ...quick, ...pinned, ...country, ...stage };
 
-  const stageKeys = (await StageTemplate.find({ type: 'student' }, { key: 1 }).sort({ order: 1 })).map((s) => s.key);
   const today = vietnamDateKey(new Date());
   const tomorrow = vietnamDateKey(new Date(Date.now() + DAY_MS));
-  const [dueTodoStudentIds, tomorrowTodoStudentIds] = await Promise.all([
+  // Independent lookups run together: each is a round trip to the remote database.
+  const [quick, stageRowsRaw, dueTodoStudentIds, tomorrowTodoStudentIds] = await Promise.all([
+    quickMatch(query.quick),
+    StageTemplate.find({ type: 'student' }, { key: 1 }).sort({ order: 1 }),
     Todo.distinct('studentId', { done: false, dueDate: { $gt: '', $lte: today } }) as Promise<string[]>,
     Todo.distinct('studentId', { done: false, dueDate: tomorrow }) as Promise<string[]>,
   ]);
+  const stageKeys = stageRowsRaw.map((s) => s.key);
+  const where = { ...base, ...quick, ...pinned, ...country, ...stage };
 
   const sortSpec: Record<string, 1 | -1> =
     query.sort === 'updated'
