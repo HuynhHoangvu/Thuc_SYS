@@ -8,7 +8,7 @@ export const FOOTER_END = '<!--/FOOTER-V3-->';
 const CSS_MARK = '/*FOOTER-V3*/';
 
 export const FOOTER_CSS = `${CSS_MARK}
-  @media only screen and (max-width:680px) {
+  @media only screen and (max-width:620px) {
     .col { max-width:100% !important; width:100% !important; }
     .ft-sep { border-left:0 !important; padding-left:0 !important; border-top:1px solid #3A5A8C !important; padding-top:16px !important; margin-top:16px !important; }
     .ft-addr { padding:8px 0 0 0 !important; }
@@ -82,7 +82,11 @@ ${FOOTER_END}`;
 // the card to 660px, and adds FOOTER_CSS. Unrecognised layouts come back unchanged, so a heavily
 // hand-edited copy is never damaged.
 export function upgradeFooter(html: string): { html: string; changed: boolean } {
-  if (html.includes(FOOTER_START)) return { html, changed: false };
+  if (html.includes(FOOTER_START)) {
+    // Stored copies from the first rollout used a 680px breakpoint, which stacked the footer in 640-680px viewports.
+    const fixed = html.replace(/(\/\*FOOTER-V3\*\/\s*@media only screen and \(max-width:)680px/, '$1620px');
+    return { html: fixed, changed: fixed !== html };
+  }
   const strip = /<tr>\s*<td>\s*<table[^>]*>\s*(?:<tbody>\s*)?<tr>\s*<td width="(?:45|50)%"/g;
   let stripAt = -1;
   for (const m of html.matchAll(strip)) stripAt = m.index!; // the last strip is the bottom one

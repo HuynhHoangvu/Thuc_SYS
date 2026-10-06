@@ -170,7 +170,7 @@ function ComposerBody({ template, onNotice }: { template: EmailTemplate; onNotic
     onNotice(`Đã tải file ${a.download}.`);
   }
 
-  const frameWidth = view === 'desk' ? 640 : 390;
+  const frameWidth = view === 'desk' ? 700 : 390;
 
   return (
     <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[94vh] w-[96vw] max-w-7xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-[#D6E0EC] bg-white text-[#0A1F4E] shadow-xl">
