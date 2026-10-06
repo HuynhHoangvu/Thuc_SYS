@@ -229,18 +229,13 @@ function PreviewDialog({ template, onClose, onNotice }: { template: EmailTemplat
   const renderedHtml = useMemo(() => template ? fillVariables(template.html, values) : '', [template, values]);
   const renderedSubject = useMemo(() => template ? fillTextVariables(template.subject, values) : '', [template, values]);
 
-  // Fields this template actually uses, and those still empty (copying with {{...}} left in is a mistake).
+  // Show only fields used by this template. Empty values intentionally leave
+  // their {{variable}} markers intact so staff can fill them after pasting.
   const usedFields = useMemo(() => {
     const text = template ? `${template.subject} ${template.html}` : '';
     return previewFields.filter((f) => text.includes(`{{${f.key}}}`));
   }, [template]);
-  const emptyFields = usedFields.filter((f) => f.key !== 'tenPhuHuynh' && !values[f.key]?.trim());
-
   async function copyEmail() {
-    if (emptyFields.length) {
-      onNotice(`Chưa điền: ${emptyFields.map((f) => f.label).join(', ')}.`);
-      return;
-    }
     setCopying(true);
     try {
       // Copy only the rendered body fragment. Supplying a complete HTML document
