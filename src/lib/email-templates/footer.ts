@@ -59,6 +59,14 @@ const socialCells = SOCIALS.map(
     `<td width="16%" style="padding-right:${i === SOCIALS.length - 1 ? 0 : 3}%;"><a href="${url}" target="_blank" rel="noopener" title="${name}" style="text-decoration:none;"><img src="/email/ft-${file}.png" width="24" height="25" alt="${name}" style="display:block;width:100%;max-width:24px;height:auto;border:0;font-family:Arial,Helvetica,sans-serif;font-size:7px;color:${WHITE};"></a></td>`
 ).join('');
 
+// Bottom blue/orange colour bar, part of the footer block.
+const FOOTER_STRIP = `<!--FOOTER-STRIP--><tr><td>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td width="50%" height="12" bgcolor="#055BB2" style="background-color:#055BB2;height:12px;font-size:0;line-height:0;">&nbsp;</td>
+    <td width="50%" height="12" bgcolor="#FE8F04" style="background-color:#FE8F04;height:12px;font-size:0;line-height:0;">&nbsp;</td>
+  </tr></table>
+</td></tr>`;
+
 export const EMAIL_FOOTER = `${FOOTER_START}
 <tr><td bgcolor="#002B66" style="background-color:#002B66;padding:16px 12px 13px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
@@ -94,6 +102,7 @@ export const EMAIL_FOOTER = `${FOOTER_START}
     </td>
   </tr></table>
 </td></tr>
+${FOOTER_STRIP}
 ${FOOTER_END}`;
 
 const OLD_BLOCK = /<!--FOOTER-V3-->[\s\S]*?<!--\/FOOTER-V3-->/;
@@ -103,7 +112,12 @@ const OLD_CSS = /\/\*FOOTER-V3\*\/[\s\S]*?\n {2}\}/;
 // or an earlier V3 block) up to and including the bottom colour strip for EMAIL_FOOTER, widens the card to
 // 660px, and adds FOOTER_CSS. Unrecognised layouts come back unchanged, so a heavily hand-edited copy is never damaged.
 export function upgradeFooter(html: string): { html: string; changed: boolean } {
-  if (html.includes(FOOTER_START)) return { html, changed: false };
+  if (html.includes(FOOTER_START)) {
+    // Copies saved before the colour bar was part of the block get it back.
+    if (html.includes('<!--FOOTER-STRIP-->')) return { html, changed: false };
+    return { html: html.replace(FOOTER_END, () => `${FOOTER_STRIP}
+${FOOTER_END}`), changed: true };
+  }
   if (OLD_BLOCK.test(html)) {
     let out = html.replace(OLD_BLOCK, () => EMAIL_FOOTER);
     out = OLD_CSS.test(out) ? out.replace(OLD_CSS, () => FOOTER_CSS) : out.replace('</head>', `<style>\n  ${FOOTER_CSS}\n</style>\n</head>`);
