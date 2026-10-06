@@ -46,7 +46,7 @@ function contact(icon: string, w: number, h: number, alt: string, inner: string)
 
 function office(label: string, address: string, query: string) {
   const href = mapUrl(query);
-  return `<tr><td class="ft-txt" style="${FONT}font-size:8.5px;line-height:14px;color:${WHITE};padding:3px 0;white-space:nowrap;"><a href="${href}" target="_blank" style="color:${ORANGE};font-weight:bold;text-decoration:none;">${label}:</a> <a href="${href}" target="_blank" style="color:${WHITE};text-decoration:none;">${address}</a></td></tr>`;
+  return `<tr><td class="ft-txt" style="${FONT}font-size:8.5px;line-height:14px;color:${WHITE};padding:3px 14px 3px 0;white-space:nowrap;"><a href="${href}" target="_blank" style="color:${ORANGE};font-weight:bold;text-decoration:none;">${label}:</a> <a href="${href}" target="_blank" style="color:${WHITE};text-decoration:none;">${address}</a></td></tr>`;
 }
 
 const SOCIALS: [string, string, string][] = [
