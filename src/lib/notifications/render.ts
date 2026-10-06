@@ -17,6 +17,7 @@ export const EMAIL_ASSETS = [
   'ico-video',
   'ico-users',
   'ico-clipboard',
+  'ico-clipboard-orange',
   'facebook',
   'youtube',
   'instagram',
@@ -190,7 +191,7 @@ function blockHtml(block: string, margin: number) {
     if (line.startsWith('- ')) list.push(`<li style="margin:0px 0px 4px">${inlineText(line.slice(2))}</li>`);
     else if (line.startsWith('☐ ')) {
       flush();
-      out.push(`<div style="margin:2px 0px">&#9744; ${inlineText(line.slice(2))}</div>`);
+      out.push(`<div style="margin:2px 0px"><span style="display:inline-block;width:12px;height:12px;border:1.5px solid #f39422;border-radius:2px;margin-right:7px;vertical-align:-1px"></span>${inlineText(line.slice(2))}</div>`);
     } else {
       flush();
       out.push(`${out.length ? '<br>' : ''}${inlineText(line)}`);
