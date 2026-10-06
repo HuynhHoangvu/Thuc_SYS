@@ -22,6 +22,23 @@ const previewFields = [
   { key: 'ngayCapThu', label: 'Ngày cấp thư', placeholder: '04/10/2026' },
   { key: 'ngayPhongVan', label: 'Ngày phỏng vấn', placeholder: '19/10/2026' },
   { key: 'gioPhongVan', label: 'Giờ phỏng vấn', placeholder: '10:30 sáng' },
+  { key: 'tuNgay', label: 'Thực hành từ ngày', placeholder: '05/10/2026' },
+  { key: 'denNgay', label: 'Thực hành đến ngày', placeholder: '10/10/2026' },
+  { key: 'ngayBuoi1', label: 'Ngày buổi 1', placeholder: '06/10/2026' },
+  { key: 'thuBuoi1', label: 'Thứ buổi 1', placeholder: 'Thứ Ba' },
+  { key: 'gioBuoi1', label: 'Giờ buổi 1', placeholder: '09:00 sáng' },
+  { key: 'ngayBuoi2', label: 'Ngày buổi 2', placeholder: '08/10/2026' },
+  { key: 'thuBuoi2', label: 'Thứ buổi 2', placeholder: 'Thứ Năm' },
+  { key: 'gioBuoi2', label: 'Giờ buổi 2', placeholder: '09:00 sáng' },
+  { key: 'ngayBuoi3', label: 'Ngày buổi 3', placeholder: '09/10/2026' },
+  { key: 'thuBuoi3', label: 'Thứ buổi 3', placeholder: 'Thứ Sáu' },
+  { key: 'gioBuoi3', label: 'Giờ buổi 3', placeholder: '09:00 sáng' },
+  { key: 'hinhThuc', label: 'Hình thức thực hành', placeholder: 'Google Meet' },
+  { key: 'mentor', label: 'Mentor', placeholder: 'Trần Ngọc Duyên' },
+  { key: 'noiDungLuyenTap', label: 'Nội dung luyện tập', placeholder: 'Thực hành các câu hỏi phỏng vấn thường gặp...' },
+  { key: 'noiDungBoSung1', label: 'Nội dung cần bổ sung 1', placeholder: 'Bản scan hộ chiếu...' },
+  { key: 'noiDungBoSung2', label: 'Nội dung cần bổ sung 2', placeholder: 'Thông tin lịch sử du lịch...' },
+  { key: 'noiDungBoSung3', label: 'Nội dung cần bổ sung 3', placeholder: 'Thông tin người thân tại Hoa Kỳ...' },
 ] as const;
 
 const blankTemplate: EmailTemplateInput = {

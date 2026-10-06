@@ -43,7 +43,7 @@ const defaults = [
   {
     seedKey: 'practice-schedule',
     file: 'thong-bao-lich-luyen-tap-phong-van.html',
-    name: 'Lịch luyện tập phỏng vấn nội bộ 1-1',
+    name: 'Lịch thực hành phỏng vấn',
     replacements: [],
   },
   {
@@ -52,12 +52,27 @@ const defaults = [
     name: 'Thư chúc mừng nhận Offer Letter từ trường',
     replacements: [],
   },
+  {
+    seedKey: 'ds160-document-reminder',
+    file: 'nhac-bo-sung-ho-so-ds160.html',
+    name: 'Nhắc bổ sung hồ sơ DS-160',
+    replacements: [],
+  },
+  {
+    seedKey: 'school-application-submitted',
+    file: 'cap-nhat-ho-so-da-nop-truong.html',
+    name: 'Cập nhật hồ sơ đã nộp đến trường',
+    replacements: [],
+  },
 ];
 
 async function main() {
   if (!process.argv.includes('--yes')) throw new Error('Add --yes to confirm updating the email template library.');
   const live = process.argv.includes('--live');
   const refresh = process.argv.includes('--refresh');
+  const requestedKey = process.argv.find((arg) => arg.startsWith('--key='))?.slice('--key='.length);
+  const selectedDefaults = requestedKey ? defaults.filter((item) => item.seedKey === requestedKey) : defaults;
+  if (requestedKey && selectedDefaults.length === 0) throw new Error(`Unknown email template key: ${requestedKey}`);
   const uri = live ? process.env.ATLAS_DATABASE_URL : process.env.DATABASE_URL;
   if (!uri) throw new Error(`${live ? 'ATLAS_DATABASE_URL' : 'DATABASE_URL'} is not set.`);
 
@@ -65,7 +80,7 @@ async function main() {
   await client.connect();
   try {
     const collection = client.db('thucsys').collection('emailtemplates');
-    for (const item of defaults) {
+    for (const item of selectedDefaults) {
       let html = await readFile(path.join(process.cwd(), 'email-templates', item.file), 'utf8');
       for (const [from, to] of item.replacements) html = html.replaceAll(from, to);
       const subject = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || 'Mẫu email Catholic MTA';
@@ -80,7 +95,7 @@ async function main() {
     }
 
     const saved = await collection
-      .find({ seedKey: { $in: defaults.map((item) => item.seedKey) } })
+      .find({ seedKey: { $in: selectedDefaults.map((item) => item.seedKey) } })
       .project({ seedKey: 1, name: 1, html: 1 })
       .toArray();
     for (const template of saved) {

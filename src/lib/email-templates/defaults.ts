@@ -40,13 +40,25 @@ const DEFAULTS = [
   {
     seedKey: 'practice-schedule',
     file: 'thong-bao-lich-luyen-tap-phong-van.html',
-    name: 'Lịch luyện tập phỏng vấn nội bộ 1-1',
+    name: 'Lịch thực hành phỏng vấn',
     replacements: [],
   },
   {
     seedKey: 'offer-letter-congrats',
     file: 'thu-chuc-mung-nhan-offer-letter.html',
     name: 'Thư chúc mừng nhận Offer Letter từ trường',
+    replacements: [],
+  },
+  {
+    seedKey: 'ds160-document-reminder',
+    file: 'nhac-bo-sung-ho-so-ds160.html',
+    name: 'Nhắc bổ sung hồ sơ DS-160',
+    replacements: [],
+  },
+  {
+    seedKey: 'school-application-submitted',
+    file: 'cap-nhat-ho-so-da-nop-truong.html',
+    name: 'Cập nhật hồ sơ đã nộp đến trường',
     replacements: [],
   },
 ] as const;
@@ -72,6 +84,18 @@ export async function ensureDefaultEmailTemplates() {
     t.html = t.html.replaceAll(OLD_SIGNATURE_LOGO, NEW_SIGNATURE_LOGO).replaceAll(OLD_US_LABEL, NEW_US_LABEL);
     await t.save();
   }
+
+  // Replace only the legacy practice template. Staff-edited copies of the new
+  // design are left alone because they no longer contain the old {{buoi1}} field.
+  const legacyPractice = await EmailTemplate.findOne({ seedKey: 'practice-schedule', html: { $regex: '\\{\\{buoi1\\}\\}' } });
+  if (legacyPractice) {
+    const html = await readFile(path.join(process.cwd(), 'email-templates', 'thong-bao-lich-luyen-tap-phong-van.html'), 'utf8');
+    legacyPractice.name = 'Lịch thực hành phỏng vấn';
+    legacyPractice.subject = titleOf(html);
+    legacyPractice.html = html;
+    await legacyPractice.save();
+  }
+
   for (const item of DEFAULTS) {
     if (await EmailTemplate.exists({ seedKey: item.seedKey })) continue;
     try {
